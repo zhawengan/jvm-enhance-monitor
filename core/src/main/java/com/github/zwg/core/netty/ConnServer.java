@@ -1,5 +1,7 @@
 package com.github.zwg.core.netty;
 
+import com.github.zwg.core.command.CommandFactory;
+import com.github.zwg.core.manager.ReflectClassManager;
 import com.github.zwg.core.session.DefaultSessionManager;
 import com.github.zwg.core.session.SessionManager;
 import io.netty.bootstrap.ServerBootstrap;
@@ -17,6 +19,9 @@ import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
 import io.netty.handler.timeout.IdleStateHandler;
 import java.lang.instrument.Instrumentation;
+import java.lang.reflect.Field;
+import java.util.Collection;
+import java.util.Collections;
 
 /**
  * @author zwg
@@ -28,7 +33,7 @@ public class ConnServer {
     private final SessionManager sessionManager = new DefaultSessionManager();
     private final Instrumentation inst;
 
-    public ConnServer(Instrumentation inst){
+    public ConnServer(Instrumentation inst) {
 
         this.inst = inst;
     }
@@ -37,11 +42,13 @@ public class ConnServer {
         EventLoopGroup bossGroup = new NioEventLoopGroup();
         EventLoopGroup workerGroup = new NioEventLoopGroup();
         try {
-
+            //初始化
+            CommandFactory.getInstance();
+            ReflectClassManager.getInstance().initLoadedClass(getLoadClasses());
             ServerBootstrap bootstrap = new ServerBootstrap();
             bootstrap.group(bossGroup, workerGroup)
                     .channel(NioServerSocketChannel.class)
-                    .option(ChannelOption.SO_BACKLOG,1024)
+                    .option(ChannelOption.SO_BACKLOG, 1024)
                     .handler(new LoggingHandler(LogLevel.INFO))
                     .childHandler(new ChannelInitializer<SocketChannel>() {
                         @Override
@@ -51,13 +58,14 @@ public class ConnServer {
                             pipeline.addLast(new IdleHandler(sessionManager));
                             pipeline.addLast(new IdleStateHandler(30, 0, 0));
                             //处理粘包和拆包问题
-                            pipeline.addLast(new LengthFieldBasedFrameDecoder(20*1024,0,4,0,4));
+                            pipeline.addLast(
+                                    new LengthFieldBasedFrameDecoder(20 * 1024, 0, 4, 0, 4));
                             pipeline.addLast(new LengthFieldPrepender(4));
                             //自定义协议编解码
                             pipeline.addLast(new MessageEncoder());
                             pipeline.addLast(new MessageDecoder());
                             //具体消息处理器
-                            pipeline.addLast(new ServerMessageHandler(sessionManager,inst));
+                            pipeline.addLast(new ServerMessageHandler(sessionManager, inst));
                         }
                     });
             ChannelFuture future = bootstrap.bind(port).sync();
@@ -72,5 +80,20 @@ public class ConnServer {
 
     public static void main(String[] args) {
         new ConnServer(null).start(8080);
+    }
+
+
+
+    public static Collection<Class<?>> getLoadClasses(){
+        try {
+            ClassLoader classLoader = ConnServer.class.getClassLoader();
+            Field field = ClassLoader.class.getDeclaredField("classes");
+            field.setAccessible(true);
+            Collection<Class<?>> data = (Collection<Class<?>>)field.get(classLoader);
+            return data;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return Collections.emptyList();
     }
 }

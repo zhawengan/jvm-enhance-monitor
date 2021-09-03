@@ -12,6 +12,10 @@ public interface CommandHandler {
 
     String getCommandName();
 
+    default boolean commandCheck(Command command){
+        return true;
+    }
+
     void execute(Session session, Command command,Instrumentation inst,MonitorCallback callback);
 
 }

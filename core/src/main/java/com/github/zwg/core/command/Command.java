@@ -1,5 +1,6 @@
 package com.github.zwg.core.command;
 
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -11,7 +12,11 @@ public class Command {
 
     private String name;
 
-    private Map<String,String> options;
+    private Map<String, String> options;
+
+    public Command() {
+        options = new HashMap<>();
+    }
 
     public String getName() {
         return name;
@@ -26,6 +31,9 @@ public class Command {
     }
 
     public void setOptions(Map<String, String> options) {
+        if (options == null) {
+            return;
+        }
         this.options = options;
     }
 }

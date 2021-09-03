@@ -1,7 +1,9 @@
 package com.github.zwg.core;
 
+import com.github.zwg.core.manager.ReflectClassManager;
 import com.github.zwg.core.netty.ConnServer;
 import java.lang.instrument.Instrumentation;
+import java.util.Arrays;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,6 +33,7 @@ public class AgentListener {
         if (!isStarted) {
             ConnServer connServer = new ConnServer(inst);
             connServer.start(8080);
+            ReflectClassManager.getInstance().initLoadedClass(Arrays.asList(inst.getAllLoadedClasses()));
             logger.info("agent listener started.");
         }
         return isStarted;

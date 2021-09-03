@@ -3,6 +3,7 @@ package com.github.zwg.core.netty;
 import com.github.zwg.core.command.Command;
 import com.github.zwg.core.command.CommandFactory;
 import com.github.zwg.core.command.CommandHandler;
+import com.github.zwg.core.execption.BadCommandException;
 import com.github.zwg.core.session.SessionManager;
 import com.github.zwg.core.util.JacksonObjectFormat;
 import io.netty.channel.Channel;
@@ -25,6 +26,8 @@ public class ServerMessageHandler extends SimpleChannelInboundHandler<Message> {
     private final JacksonObjectFormat objectFormat = new JacksonObjectFormat();
     private final SessionManager sessionManager;
     private final Instrumentation inst;
+
+    private boolean init = false;
 
     public ServerMessageHandler(SessionManager sessionManager, Instrumentation inst) {
 
@@ -56,12 +59,19 @@ public class ServerMessageHandler extends SimpleChannelInboundHandler<Message> {
             channel.writeAndFlush(response, channel.voidPromise());
             return;
         }
-        commandHandler.execute(sessionManager.get(channel), command, inst, result -> {
+        try {
+            commandHandler.execute(sessionManager.get(channel), command, inst, result -> {
+                Message response = new Message();
+                response.setMessageType(MessageTypeEnum.RESPONSE);
+                response.setBody(objectFormat.toJsonPretty(result));
+                channel.writeAndFlush(response, channel.voidPromise());
+            });
+        } catch (BadCommandException ex) {
             Message response = new Message();
+            response.setBody(ex.getMessage());
             response.setMessageType(MessageTypeEnum.RESPONSE);
-            response.setBody(objectFormat.toJsonPretty(result));
             channel.writeAndFlush(response, channel.voidPromise());
-        });
+        }
         sendEmptyMessage(channel);
     }
 
@@ -70,6 +80,5 @@ public class ServerMessageHandler extends SimpleChannelInboundHandler<Message> {
         response.setMessageType(MessageTypeEnum.EMPTY);
         channel.writeAndFlush(response, channel.voidPromise());
     }
-
 
 }

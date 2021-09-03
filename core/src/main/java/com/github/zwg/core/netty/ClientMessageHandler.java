@@ -39,6 +39,8 @@ public class ClientMessageHandler extends SimpleChannelInboundHandler<Message> {
         }
         if(message.getMessageType()==MessageTypeEnum.RESPONSE){
             writer.println(message.getBody());
+            writer.flush();
+            printPrompt();
         }else {
             printPrompt();
         }
