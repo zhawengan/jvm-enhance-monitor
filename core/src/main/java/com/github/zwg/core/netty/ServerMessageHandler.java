@@ -4,7 +4,7 @@ import com.github.zwg.core.command.Command;
 import com.github.zwg.core.command.CommandFactory;
 import com.github.zwg.core.command.CommandHandler;
 import com.github.zwg.core.execption.BadCommandException;
-import com.github.zwg.core.session.SessionManager;
+import com.github.zwg.core.session.DefaultSessionManager;
 import com.github.zwg.core.util.JacksonObjectFormat;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
@@ -24,14 +24,9 @@ public class ServerMessageHandler extends SimpleChannelInboundHandler<Message> {
     private final Logger logger = LoggerFactory.getLogger(ServerMessageHandler.class);
 
     private final JacksonObjectFormat objectFormat = new JacksonObjectFormat();
-    private final SessionManager sessionManager;
     private final Instrumentation inst;
 
-    private boolean init = false;
-
-    public ServerMessageHandler(SessionManager sessionManager, Instrumentation inst) {
-
-        this.sessionManager = sessionManager;
+    public ServerMessageHandler(Instrumentation inst) {
         this.inst = inst;
     }
 
@@ -60,12 +55,13 @@ public class ServerMessageHandler extends SimpleChannelInboundHandler<Message> {
             return;
         }
         try {
-            commandHandler.execute(sessionManager.get(channel), command, inst, result -> {
-                Message response = new Message();
-                response.setMessageType(MessageTypeEnum.RESPONSE);
-                response.setBody(objectFormat.toJsonPretty(result));
-                channel.writeAndFlush(response, channel.voidPromise());
-            });
+            commandHandler.execute(DefaultSessionManager.getInstance().get(channel), command, inst,
+                    result -> {
+                        Message response = new Message();
+                        response.setMessageType(MessageTypeEnum.RESPONSE);
+                        response.setBody(objectFormat.toJsonPretty(result));
+                        channel.writeAndFlush(response, channel.voidPromise());
+                    });
         } catch (BadCommandException ex) {
             Message response = new Message();
             response.setBody(ex.getMessage());

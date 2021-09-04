@@ -2,8 +2,6 @@ package com.github.zwg.core.netty;
 
 import com.github.zwg.core.command.CommandFactory;
 import com.github.zwg.core.manager.ReflectClassManager;
-import com.github.zwg.core.session.DefaultSessionManager;
-import com.github.zwg.core.session.SessionManager;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
@@ -30,7 +28,6 @@ import java.util.Collections;
  */
 public class ConnServer {
 
-    private final SessionManager sessionManager = new DefaultSessionManager();
     private final Instrumentation inst;
 
     public ConnServer(Instrumentation inst) {
@@ -55,7 +52,7 @@ public class ConnServer {
                         protected void initChannel(SocketChannel socketChannel) throws Exception {
                             ChannelPipeline pipeline = socketChannel.pipeline();
                             //心跳
-                            pipeline.addLast(new IdleHandler(sessionManager));
+                            pipeline.addLast(new IdleHandler());
                             pipeline.addLast(new IdleStateHandler(30, 0, 0));
                             //处理粘包和拆包问题
                             pipeline.addLast(
@@ -65,7 +62,7 @@ public class ConnServer {
                             pipeline.addLast(new MessageEncoder());
                             pipeline.addLast(new MessageDecoder());
                             //具体消息处理器
-                            pipeline.addLast(new ServerMessageHandler(sessionManager, inst));
+                            pipeline.addLast(new ServerMessageHandler(inst));
                         }
                     });
             ChannelFuture future = bootstrap.bind(port).sync();
@@ -83,13 +80,12 @@ public class ConnServer {
     }
 
 
-
-    public static Collection<Class<?>> getLoadClasses(){
+    public static Collection<Class<?>> getLoadClasses() {
         try {
             ClassLoader classLoader = ConnServer.class.getClassLoader();
             Field field = ClassLoader.class.getDeclaredField("classes");
             field.setAccessible(true);
-            Collection<Class<?>> data = (Collection<Class<?>>)field.get(classLoader);
+            Collection<Class<?>> data = (Collection<Class<?>>) field.get(classLoader);
             return data;
         } catch (Exception e) {
             e.printStackTrace();
