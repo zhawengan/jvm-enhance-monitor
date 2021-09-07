@@ -32,6 +32,7 @@ public class AgentLauncher {
         try {
             String[] params = args.split(";");
             ClassLoader agentClassLoader = getAgentClassLoader(params[0]);
+            initMonitorProxy(agentClassLoader);
             Class<?> listenerClass = agentClassLoader
                     .loadClass("com.github.zwg.core.AgentListener");
             //通过反射方法，获取单例
@@ -51,8 +52,56 @@ public class AgentLauncher {
     }
 
     /**
-     * 使用自定义类加载器，可以在取消类增强后，
-     * 从jvm中卸载自定义加载的类
+     * 获取AdviceWeaver，并将其方法注册到监控代理中,这样，通过监控代理AppClassLoader对象 和AgentClassLoader对象关联起来
+     */
+    private static void initMonitorProxy(ClassLoader classLoader)
+            throws ClassNotFoundException, NoSuchMethodException {
+        Class<?> adviceWeaver = classLoader.loadClass("com.github.zwg.core.advisor.AdviceWeaver");
+        MonitorProxy.init(
+                adviceWeaver.getMethod("onMethodBefore",
+                        String.class,//sessionId
+                        ClassLoader.class,//classLoader
+                        String.class,//className
+                        String.class,//methodName
+                        String.class,//methodDesc
+                        Object.class,//target
+                        Object[].class//args
+                ),
+                adviceWeaver.getMethod("onMethodReturn",
+                        String.class,//sessionId
+                        Object.class//returnObject
+                ),
+                adviceWeaver.getMethod("onMethodThrow",
+                        String.class,//sessionId
+                        Throwable.class//throwable
+                ),
+                adviceWeaver.getMethod("invokingBefore",
+                        String.class,//sessionId
+                        Integer.class,//lineNumber
+                        String.class,//owner
+                        String.class,//name
+                        String.class//desc
+                ),
+                adviceWeaver.getMethod("invokingReturn",
+                        String.class,//sessionId
+                        Integer.class,//lineNumber
+                        String.class,//owner
+                        String.class,//name
+                        String.class//desc
+                ),
+                adviceWeaver.getMethod("invokingThrow",
+                        String.class,//sessionId
+                        Integer.class,//lineNumber
+                        String.class,//owner
+                        String.class,//name
+                        String.class,//desc
+                        String.class//throwException
+                )
+        );
+    }
+
+    /**
+     * 使用自定义类加载器，可以在取消类增强后， 从jvm中卸载自定义加载的类
      */
     private static ClassLoader getAgentClassLoader(String agentJar) throws Throwable {
         if (agentClassLoader == null) {

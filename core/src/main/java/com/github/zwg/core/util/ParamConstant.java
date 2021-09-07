@@ -21,7 +21,11 @@ public interface ParamConstant {
      */
     String METHOD_KEY = "m";
     /**
-     * command中获取执行次数的键
+     * command中获取执行次数的键,或者前n个
      */
-    String EXECUTE_TIMES = "n";
+    String NUMBER_PARAM = "n";
+    /**
+     * 方法签名
+     */
+    String METHOD_DESC = "d";
 }

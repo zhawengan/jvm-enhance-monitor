@@ -8,6 +8,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import jdk.internal.org.objectweb.asm.Type;
 
 /**
  * @author zwg
@@ -35,13 +36,15 @@ public class ReflectClassManager {
         return matchClasses;
     }
 
-    public Collection<Method> searchClassMethod(Matcher<String> classMatcher,Matcher<String> methodMatcher){
+    public Collection<Method> searchClassMethod(Matcher<String> classMatcher,Matcher<JemMethod> methodMatcher){
         Collection<Class<?>> classes = searchClass(classMatcher);
         Collection<Method> methods = new ArrayList<>();
         for (Class<?> clazz:classes) {
             Set<Method> classMethods = getClassMethods(clazz);
             classMethods.forEach(o->{
-                if(methodMatcher.match(o.getName())){
+                String methodDesc = Type.getType(o).toString();
+                JemMethod jemMethod = new JemMethod(o.getName(),methodDesc);
+                if(methodMatcher.match(jemMethod)){
                     methods.add(o);
                 }
             });

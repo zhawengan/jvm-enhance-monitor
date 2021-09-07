@@ -37,7 +37,7 @@ public class SearchMatcher implements Matcher<String> {
     /**
      * 正则匹配
      */
-    class RegexMatcher implements Matcher<String> {
+    static class RegexMatcher implements Matcher<String> {
 
         private final String pattern;
 
@@ -55,7 +55,7 @@ public class SearchMatcher implements Matcher<String> {
     /**
      * 字符串相等
      */
-    class EqualMatcher implements Matcher<String> {
+    static class EqualMatcher implements Matcher<String> {
 
         private final String pattern;
 
@@ -73,7 +73,7 @@ public class SearchMatcher implements Matcher<String> {
     /**
      * 通配符匹配
      */
-    class WildcardMatcher implements Matcher<String> {
+    static class WildcardMatcher implements Matcher<String> {
 
         private final String pattern;
 

@@ -17,12 +17,20 @@ public class EnhanceClassManager {
     /**
      * 类的原始字节码
      */
-    private final Map<Class<?>, byte[]> classCache = new HashMap<>();
+    private  final Map<Class<?>, byte[]> classCache = new HashMap<>();
 
     private static EnhanceClassManager manager;
 
     private EnhanceClassManager() {
 
+    }
+
+    public byte[] get(Class<?> clazz){
+        return classCache.get(clazz);
+    }
+
+    public void put(Class<?> clazz,byte[] byteCodes){
+        classCache.put(clazz,byteCodes);
     }
 
     public synchronized void reset(Instrumentation inst) {

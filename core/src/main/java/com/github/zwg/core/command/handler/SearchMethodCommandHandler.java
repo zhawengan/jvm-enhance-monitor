@@ -7,7 +7,9 @@ import com.github.zwg.core.command.Command;
 import com.github.zwg.core.command.CommandHandler;
 import com.github.zwg.core.command.MonitorCallback;
 import com.github.zwg.core.execption.BadCommandException;
+import com.github.zwg.core.manager.JemMethod;
 import com.github.zwg.core.manager.MatchStrategy;
+import com.github.zwg.core.manager.MethodMatcher;
 import com.github.zwg.core.manager.ReflectClassManager;
 import com.github.zwg.core.manager.SearchMatcher;
 import com.github.zwg.core.session.Session;
@@ -41,15 +43,15 @@ public class SearchMethodCommandHandler implements CommandHandler {
         //1、获取class,method的匹配表达式
         String classPattern = options.get(ParamConstant.CLASS_KEY);
         String methodPattern = options.get(ParamConstant.METHOD_KEY);
+        String methodDesc = options.getOrDefault(ParamConstant.METHOD_DESC,"*");
         if (StringUtils.isBlank(classPattern) || StringUtils.isBlank(methodPattern)) {
             throw new BadCommandException("classPattern or methodPattern unValid");
         }
         SearchMatcher classMatcher = new SearchMatcher(
                 StringUtils.isBlank(reg) ? MatchStrategy.WILDCARD : MatchStrategy.valueOf(reg),
                 classPattern);
-        SearchMatcher methodMatcher = new SearchMatcher(
-                StringUtils.isBlank(reg) ? MatchStrategy.WILDCARD : MatchStrategy.valueOf(reg),
-                methodPattern);
+        JemMethod  jemMethod = new JemMethod(methodPattern,methodDesc);
+        MethodMatcher methodMatcher = new MethodMatcher(jemMethod);
         //2、查询匹配的类
         Collection<Method> methods = ReflectClassManager.getInstance()
                 .searchClassMethod(classMatcher, methodMatcher);

@@ -7,17 +7,20 @@ package com.github.zwg.core.advisor;
  */
 public interface AdviceListener {
 
-    void beforeMethod(ClassLoader classLoader, String className, String methodName,
+    default void beforeMethod(ClassLoader classLoader, String className, String methodName,
             String methodDesc,
-            Object target, Object[] args);
+            Object target, Object[] args){
+    }
 
-    void afterMethodReturning(ClassLoader classLoader, String className, String methodName,
+    default void afterMethodReturning(ClassLoader classLoader, String className, String methodName,
             String methodDesc,
-            Object target, Object[] args, Object returnObject);
+            Object target, Object[] args, Object returnObject){
+    }
 
-    void afterMethodThrowing(ClassLoader classLoader, String className, String methodName,
+    default void afterMethodThrowing(ClassLoader classLoader, String className, String methodName,
             String methodDesc,
-            Object target, Object[] args, Throwable throwable);
+            Object target, Object[] args, Throwable throwable){
+    }
 
     default void beforeLineInvoking(Integer lineNumber, String className, String methodName,
             String methodDesc) {
