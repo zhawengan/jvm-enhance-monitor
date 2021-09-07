@@ -22,15 +22,15 @@ public interface AdviceListener {
             Object target, Object[] args, Throwable throwable){
     }
 
-    default void beforeLineInvoking(Integer lineNumber, String className, String methodName,
+    default void beforeTraceInvoking(Integer lineNumber, String className, String methodName,
             String methodDesc) {
     }
 
-    default void afterLineInvoking(Integer lineNumber, String className, String methodName,
+    default void afterTraceInvoking(Integer lineNumber, String className, String methodName,
             String methodDesc) {
     }
 
-    default void afterLineThrowing(Integer lineNumber, String className, String methodName,
+    default void afterTraceThrowing(Integer lineNumber, String className, String methodName,
             String methodDesc, String exception) {
     }
 

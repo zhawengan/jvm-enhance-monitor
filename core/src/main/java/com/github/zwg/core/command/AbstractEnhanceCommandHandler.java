@@ -43,7 +43,7 @@ public abstract class AbstractEnhanceCommandHandler implements CommandHandler{
         EnhancePoint point = new EnhancePoint(classMatcher,methodMatcher);
         Enhancer.enhance(inst,session.getSessionId(),false,point);
         AdviceListener adviceListener = getAdviceListener();
-        AdviceListenerManager.getInstance().reg(session.getSessionId(), adviceListener);
+        AdviceListenerManager.reg(session.getSessionId(), adviceListener);
 
     }
 

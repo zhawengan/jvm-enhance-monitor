@@ -25,6 +25,11 @@ public class AsmCodeLock implements CodeLock, Opcodes {
         this.aa = aa;
     }
 
+    /**
+     * 通过opcode判断是解锁还是上锁的基本原则是
+     * 1、连续读到两个opcode,且这两个opcode的值及顺序完全和beginCodeArray或者endCodeArray一致
+     * 2、找到连续的匹配点后，锁状态直接变更
+     */
     @Override
     public void lockOrUnlock(int opcode) {
         int[] codes = isLock() ? endCodeArray : beginCodeArray;
@@ -32,10 +37,18 @@ public class AsmCodeLock implements CodeLock, Opcodes {
             reset();
             return;
         }
+        /**
+         * 如果只是第一个或者第二个opcode与数组值不匹配，表示只是偶然的业务代码，
+         * index重置
+         */
         if (codes[index] != opcode) {
             reset();
             return;
         }
+        /**
+         * 到得此处，表示codes[index]==opcode, index的值是0或者1
+         * 所以++index==codes.length.表示完全匹配到了一个锁位置
+         */
         if (++index == codes.length) {
             isLock = !isLock;
             reset();

@@ -56,7 +56,8 @@ public class AgentLauncher {
      */
     private static void initMonitorProxy(ClassLoader classLoader)
             throws ClassNotFoundException, NoSuchMethodException {
-        Class<?> adviceWeaver = classLoader.loadClass("com.github.zwg.core.advisor.AdviceWeaver");
+        Class<?> adviceWeaver = classLoader.loadClass(
+                "com.github.zwg.core.advisor.AdviceListenerManager");
         MonitorProxy.init(
                 adviceWeaver.getMethod("onMethodBefore",
                         String.class,//sessionId
@@ -75,21 +76,21 @@ public class AgentLauncher {
                         String.class,//sessionId
                         Throwable.class//throwable
                 ),
-                adviceWeaver.getMethod("invokingBefore",
+                adviceWeaver.getMethod("beforeTraceInvoking",
                         String.class,//sessionId
                         Integer.class,//lineNumber
                         String.class,//owner
                         String.class,//name
                         String.class//desc
                 ),
-                adviceWeaver.getMethod("invokingReturn",
+                adviceWeaver.getMethod("afterTraceInvoking",
                         String.class,//sessionId
                         Integer.class,//lineNumber
                         String.class,//owner
                         String.class,//name
                         String.class//desc
                 ),
-                adviceWeaver.getMethod("invokingThrow",
+                adviceWeaver.getMethod("afterTraceThrowing",
                         String.class,//sessionId
                         Integer.class,//lineNumber
                         String.class,//owner
