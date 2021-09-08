@@ -1,56 +1,53 @@
 package com.github.zwg.core.command.handler;
 
-import static com.github.zwg.core.util.ClassModifierUtil.tranModifier;
+import static com.github.zwg.core.util.ClassUtil.tranModifier;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 
-import com.github.zwg.core.command.Command;
+import com.github.zwg.core.annotation.Arg;
+import com.github.zwg.core.annotation.Cmd;
 import com.github.zwg.core.command.CommandHandler;
 import com.github.zwg.core.command.MonitorCallback;
-import com.github.zwg.core.execption.BadCommandException;
+import com.github.zwg.core.command.ParamConstant;
 import com.github.zwg.core.manager.JemMethod;
 import com.github.zwg.core.manager.MatchStrategy;
 import com.github.zwg.core.manager.MethodMatcher;
 import com.github.zwg.core.manager.ReflectClassManager;
 import com.github.zwg.core.manager.SearchMatcher;
 import com.github.zwg.core.session.Session;
-import com.github.zwg.core.util.ParamConstant;
 import java.lang.annotation.Annotation;
 import java.lang.instrument.Instrumentation;
 import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-import org.apache.commons.lang3.StringUtils;
 
 /**
  * @author zwg
  * @version 1.0
  * @date 2021/8/31
  */
+@Cmd(name = ParamConstant.COMMAND_SEARCH_METHOD)
 public class SearchMethodCommandHandler implements CommandHandler {
 
-    @Override
-    public String getCommandName() {
-        return "sm";
-    }
+    @Arg(name = ParamConstant.CLASS_KEY, description = "find class expression")
+    private String classPattern;
+
+    @Arg(name = ParamConstant.METHOD_KEY, description = "find method expression")
+    private String methodPattern;
+
+    @Arg(name = ParamConstant.METHOD_DESC, required = false, defaultValue = "*", description = "method description expression")
+    private String methodDesc;
+
+    @Arg(name = ParamConstant.REG_KEY, required = false, defaultValue = "WILDCARD", description = "expression matching rules: wildcard, regular, equal")
+    private String strategy;
+
 
     @Override
-    public void execute(Session session, Command command, Instrumentation inst,
+    public void execute(Session session, Instrumentation inst,
             MonitorCallback callback) {
-        Map<String, String> options = command.getOptions();
-        //0、获取类匹配方式
-        String reg = options.get(ParamConstant.REG_KEY);
-        //1、获取class,method的匹配表达式
-        String classPattern = options.get(ParamConstant.CLASS_KEY);
-        String methodPattern = options.get(ParamConstant.METHOD_KEY);
-        String methodDesc = options.getOrDefault(ParamConstant.METHOD_DESC,"*");
-        if (StringUtils.isBlank(classPattern) || StringUtils.isBlank(methodPattern)) {
-            throw new BadCommandException("classPattern or methodPattern unValid");
-        }
-        SearchMatcher classMatcher = new SearchMatcher(
-                StringUtils.isBlank(reg) ? MatchStrategy.WILDCARD : MatchStrategy.valueOf(reg),
+        SearchMatcher classMatcher = new SearchMatcher(MatchStrategy.valueOf(strategy),
                 classPattern);
-        JemMethod  jemMethod = new JemMethod(methodPattern,methodDesc);
+        JemMethod jemMethod = new JemMethod(methodPattern, methodDesc);
         MethodMatcher methodMatcher = new MethodMatcher(jemMethod);
         //2、查询匹配的类
         Collection<Method> methods = ReflectClassManager.getInstance()

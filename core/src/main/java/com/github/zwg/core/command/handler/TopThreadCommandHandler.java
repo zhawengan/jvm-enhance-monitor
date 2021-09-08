@@ -1,10 +1,11 @@
 package com.github.zwg.core.command.handler;
 
-import com.github.zwg.core.command.Command;
+import com.github.zwg.core.annotation.Arg;
+import com.github.zwg.core.annotation.Cmd;
 import com.github.zwg.core.command.CommandHandler;
 import com.github.zwg.core.command.MonitorCallback;
+import com.github.zwg.core.command.ParamConstant;
 import com.github.zwg.core.session.Session;
-import com.github.zwg.core.util.ParamConstant;
 import java.lang.instrument.Instrumentation;
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadInfo;
@@ -18,26 +19,26 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-import org.apache.commons.lang3.StringUtils;
 
 /**
  * @author zwg
  * @version 1.0
  * @date 2021/9/4
  */
+@Cmd(name = ParamConstant.COMMAND_TOP_THREAD, description = "find the top N threads that consume the most resources", help = {
+        "top",
+        "top -n 10"
+})
 public class TopThreadCommandHandler implements CommandHandler {
 
     private final ThreadMXBean threadMXBean = ManagementFactory.getThreadMXBean();
 
-    @Override
-    public String getCommandName() {
-        return "top";
-    }
+    @Arg(name = ParamConstant.NUMBER_PARAM, required = false, defaultValue = "10", description = "find the top N threads")
+    private Integer threadNum;
 
     @Override
-    public void execute(Session session, Command command, Instrumentation inst,
+    public void execute(Session session, Instrumentation inst,
             MonitorCallback callback) {
-        String threadNum = command.getOptions().get(ParamConstant.NUMBER_PARAM);
         long totalCpuTime = threadMXBean.getCurrentThreadCpuTime();
         List<JemThreadInfo> threadInfos = new ArrayList<>();
         ThreadInfo[] threadInfoList = threadMXBean
@@ -52,11 +53,9 @@ public class TopThreadCommandHandler implements CommandHandler {
                     Arrays.stream(curt.getStackTrace()).map(StackTraceElement::toString)
                             .collect(Collectors.toList())));
         }
-        if (!StringUtils.isBlank(threadNum)) {
-            Integer num = Math.min(Integer.parseInt(threadNum), threadInfos.size());
-            Collections.sort(threadInfos);
-            threadInfos = threadInfos.subList(0, num);
-        }
+        Integer num = Math.min(threadNum, threadInfos.size());
+        Collections.sort(threadInfos);
+        threadInfos = threadInfos.subList(0, num);
         callback.execute(getThreadInfoData(threadInfos, totalCpuTime));
 
 
@@ -80,6 +79,10 @@ public class TopThreadCommandHandler implements CommandHandler {
         }
         result.put("THREAD-INFO", threadData);
         return result;
+    }
+
+    public void setThreadNum(Integer threadNum) {
+        this.threadNum = threadNum;
     }
 
     public class JemThreadInfo implements Comparable<JemThreadInfo> {

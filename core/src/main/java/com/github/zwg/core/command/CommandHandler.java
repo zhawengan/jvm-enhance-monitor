@@ -10,12 +10,7 @@ import java.lang.instrument.Instrumentation;
  */
 public interface CommandHandler {
 
-    String getCommandName();
 
-    default boolean commandCheck(Command command){
-        return true;
-    }
-
-    void execute(Session session, Command command,Instrumentation inst,MonitorCallback callback);
+    void execute(Session session, Instrumentation inst,MonitorCallback callback);
 
 }

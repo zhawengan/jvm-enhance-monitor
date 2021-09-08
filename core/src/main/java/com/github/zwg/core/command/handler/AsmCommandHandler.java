@@ -2,16 +2,16 @@ package com.github.zwg.core.command.handler;
 
 import static java.lang.System.arraycopy;
 
+import com.github.zwg.core.annotation.Arg;
+import com.github.zwg.core.annotation.Cmd;
 import com.github.zwg.core.asm.AsmTraceClassVisitor;
-import com.github.zwg.core.command.Command;
 import com.github.zwg.core.command.CommandHandler;
 import com.github.zwg.core.command.MonitorCallback;
-import com.github.zwg.core.execption.BadCommandException;
+import com.github.zwg.core.command.ParamConstant;
 import com.github.zwg.core.manager.MatchStrategy;
 import com.github.zwg.core.manager.ReflectClassManager;
 import com.github.zwg.core.manager.SearchMatcher;
 import com.github.zwg.core.session.Session;
-import com.github.zwg.core.util.ParamConstant;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.PrintWriter;
@@ -31,32 +31,34 @@ import org.objectweb.asm.MethodVisitor;
 /**
  * @author zwg
  * @version 1.0
- * @date 2021/8/31 查看对应class或者方法的字节码
+ * @date 2021/8/31 View the bytecode of the corresponding class or method
  */
+@Cmd(name = ParamConstant.COMMAND_ASM, description = "view the bytecode information of the corresponding class or method",
+        help = {
+                "asm -c *className",
+                "asm -c *className -m *methodName",
+                "asm -r WILDCARD -c *className -m *methodName"
+        })
 public class AsmCommandHandler implements CommandHandler {
 
-    @Override
-    public String getCommandName() {
-        return "asm";
-    }
+    @Arg(name = ParamConstant.CLASS_KEY, description = "find class expression")
+    private String classPattern;
+
+    @Arg(name = ParamConstant.METHOD_KEY, required = false, defaultValue = "*", description = "find method expression")
+    private String methodPattern;
+
+    @Arg(name = ParamConstant.REG_KEY, required = false, defaultValue = "WILDCARD", description = "expression matching rules: wildcard, regular, equal")
+    private String strategy;
+
 
     @Override
-    public void execute(Session session, Command command, Instrumentation inst,
+    public void execute(Session session, Instrumentation inst,
             MonitorCallback callback) {
-        Map<String, String> options = command.getOptions();
-        //1、获取class和method的匹配表达式
-        String reg = options.get(ParamConstant.REG_KEY);
-        //1、获取class,method的匹配表达式
-        String classPattern = options.get(ParamConstant.CLASS_KEY);
-        String methodPattern = options.getOrDefault(ParamConstant.METHOD_KEY, "*");
-        if (StringUtils.isBlank(classPattern)) {
-            throw new BadCommandException("classPattern unValid");
-        }
-        SearchMatcher classMatcher = new SearchMatcher(
-                StringUtils.isBlank(reg) ? MatchStrategy.WILDCARD : MatchStrategy.valueOf(reg),
+        SearchMatcher classMatcher = new SearchMatcher(MatchStrategy.valueOf(strategy),
                 classPattern);
         SearchMatcher methodMatcher = new SearchMatcher(
-                StringUtils.isBlank(reg) ? MatchStrategy.WILDCARD : MatchStrategy.valueOf(reg),
+                StringUtils.isBlank(strategy) ? MatchStrategy.WILDCARD
+                        : MatchStrategy.valueOf(strategy),
                 methodPattern);
         //2、查询匹配的类
         Collection<Class<?>> classes = ReflectClassManager.getInstance()

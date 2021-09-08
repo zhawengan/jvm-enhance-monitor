@@ -1,13 +1,14 @@
 package com.github.zwg.core.util;
 
 import java.lang.reflect.Modifier;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * @author zwg
  * @version 1.0
  * @date 2021/9/3
  */
-public class ClassModifierUtil {
+public class ClassUtil {
 
     public static String tranModifier(int mod) {
         StringBuilder sb = new StringBuilder();
@@ -51,6 +52,10 @@ public class ClassModifierUtil {
             sb.deleteCharAt(sb.length() - 1);
         }
         return sb.toString();
+    }
+
+    public static String tranClassName(String className) {
+        return StringUtils.replace(className, "/", ".");
     }
 
 }

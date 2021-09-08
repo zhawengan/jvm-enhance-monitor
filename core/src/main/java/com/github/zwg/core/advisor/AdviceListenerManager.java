@@ -24,8 +24,11 @@ public class AdviceListenerManager {
         advices.put(sessionId, adviceListener);
     }
 
-    public static void unReg(String sessionId,AdviceListener adviceListener){
-        advices.remove(sessionId);
+    public static void unReg(String sessionId){
+        AdviceListener listener = advices.remove(sessionId);
+        if(listener!=null){
+            listener.destroy();
+        }
     }
 
     /**

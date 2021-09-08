@@ -55,7 +55,7 @@ public class ServerMessageHandler extends SimpleChannelInboundHandler<Message> {
             return;
         }
         try {
-            commandHandler.execute(DefaultSessionManager.getInstance().get(channel), command, inst,
+            commandHandler.execute(DefaultSessionManager.getInstance().get(channel), inst,
                     result -> {
                         Message response = new Message();
                         response.setMessageType(MessageTypeEnum.RESPONSE);

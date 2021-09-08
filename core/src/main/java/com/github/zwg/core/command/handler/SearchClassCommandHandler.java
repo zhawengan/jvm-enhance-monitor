@@ -2,16 +2,16 @@ package com.github.zwg.core.command.handler;
 
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 
-import com.github.zwg.core.command.Command;
+import com.github.zwg.core.annotation.Arg;
+import com.github.zwg.core.annotation.Cmd;
 import com.github.zwg.core.command.CommandHandler;
 import com.github.zwg.core.command.MonitorCallback;
-import com.github.zwg.core.execption.BadCommandException;
-import com.github.zwg.core.manager.SearchMatcher;
+import com.github.zwg.core.command.ParamConstant;
 import com.github.zwg.core.manager.MatchStrategy;
 import com.github.zwg.core.manager.ReflectClassManager;
+import com.github.zwg.core.manager.SearchMatcher;
 import com.github.zwg.core.session.Session;
-import com.github.zwg.core.util.ClassModifierUtil;
-import com.github.zwg.core.util.ParamConstant;
+import com.github.zwg.core.util.ClassUtil;
 import java.lang.annotation.Annotation;
 import java.lang.instrument.Instrumentation;
 import java.lang.reflect.Field;
@@ -20,40 +20,32 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.apache.commons.lang3.StringUtils;
 
 /**
  * @author zwg
  * @version 1.0
  * @date 2021/8/31
  */
+@Cmd(name = ParamConstant.COMMAND_SEARCH_CLASS)
 public class SearchClassCommandHandler implements CommandHandler {
 
-    @Override
-    public String getCommandName() {
-        return "sc";
-    }
+    @Arg(name = ParamConstant.CLASS_KEY, description = "find class expression")
+    private String classPattern;
+
+    @Arg(name = ParamConstant.REG_KEY, required = false, defaultValue = "WILDCARD", description = "expression matching rules: wildcard, regular, equal")
+    private String strategy;
+
 
     @Override
-    public void execute(Session session, Command command, Instrumentation inst,
+    public void execute(Session session, Instrumentation inst,
             MonitorCallback callback) {
-        Map<String, String> options = command.getOptions();
-        //0、获取类匹配方式
-        String reg = options.get(ParamConstant.REG_KEY);
-        //1、获取class的匹配表达式
-        String classPattern = options.get(ParamConstant.CLASS_KEY);
-        if(StringUtils.isBlank(classPattern)){
-            throw new BadCommandException("classPattern unValid");
-        }
-        SearchMatcher searchMatcher = new SearchMatcher(
-                StringUtils.isBlank(reg) ? MatchStrategy.WILDCARD : MatchStrategy.valueOf(reg),
+        SearchMatcher searchMatcher = new SearchMatcher(MatchStrategy.valueOf(strategy),
                 classPattern);
         //2、查询匹配的类
         Collection<Class<?>> classes = ReflectClassManager.getInstance().searchClass(searchMatcher);
         //3、打印类信息
         callback.execute(getClassInfos(classes));
     }
-
 
 
     public Map<String, Object> getClassInfos(Collection<Class<?>> classes) {
@@ -70,7 +62,7 @@ public class SearchClassCommandHandler implements CommandHandler {
             detail.put("isPrimitive", clazz.isPrimitive());
             detail.put("isSynthetic", clazz.isSynthetic());
             detail.put("simple-name", clazz.getSimpleName());
-            detail.put("modifier", ClassModifierUtil.tranModifier(clazz.getModifiers()));
+            detail.put("modifier", ClassUtil.tranModifier(clazz.getModifiers()));
             detail.put("annotation", getAnnotations(clazz));
             detail.put("interfaces", getInterfaces(clazz));
             detail.put("super-class", getSuperClasses(clazz));
@@ -87,7 +79,7 @@ public class SearchClassCommandHandler implements CommandHandler {
         final Field[] fields = clazz.getDeclaredFields();
         for (Field field : fields) {
             String info = String.format("modifier/type/name = %s/%s/%s",
-                    ClassModifierUtil.tranModifier(field.getModifiers()), field.getType().getName(),
+                    ClassUtil.tranModifier(field.getModifiers()), field.getType().getName(),
                     field.getName());
             fieldInfo.add(info);
         }

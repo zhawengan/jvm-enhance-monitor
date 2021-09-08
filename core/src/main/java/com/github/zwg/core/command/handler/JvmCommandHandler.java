@@ -1,17 +1,15 @@
 package com.github.zwg.core.command.handler;
 
-import com.github.zwg.core.command.Command;
+import com.github.zwg.core.annotation.Cmd;
 import com.github.zwg.core.command.CommandHandler;
 import com.github.zwg.core.command.MonitorCallback;
+import com.github.zwg.core.command.ParamConstant;
 import com.github.zwg.core.session.Session;
-import com.github.zwg.core.util.JacksonObjectFormat;
 import java.lang.instrument.Instrumentation;
 import java.lang.management.ClassLoadingMXBean;
-import java.lang.management.CompilationMXBean;
 import java.lang.management.GarbageCollectorMXBean;
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;
-import java.lang.management.MemoryManagerMXBean;
 import java.lang.management.OperatingSystemMXBean;
 import java.lang.management.RuntimeMXBean;
 import java.lang.management.ThreadMXBean;
@@ -24,28 +22,27 @@ import java.util.Map;
  * @version 1.0
  * @date 2021/8/31
  */
+@Cmd(name = ParamConstant.COMMAND_JVM, description = "view the status of related data in the JVM", help = "jvm")
 public class JvmCommandHandler implements CommandHandler {
 
     private final RuntimeMXBean runtimeMXBean = ManagementFactory.getRuntimeMXBean();
     private final ClassLoadingMXBean classLoadingMXBean = ManagementFactory.getClassLoadingMXBean();
-    private final Collection<GarbageCollectorMXBean> garbageCollectorMXBeans = ManagementFactory.getGarbageCollectorMXBeans();
+    private final Collection<GarbageCollectorMXBean> garbageCollectorMXBeans = ManagementFactory
+            .getGarbageCollectorMXBeans();
     private final MemoryMXBean memoryMXBean = ManagementFactory.getMemoryMXBean();
-    private final OperatingSystemMXBean operatingSystemMXBean = ManagementFactory.getOperatingSystemMXBean();
+    private final OperatingSystemMXBean operatingSystemMXBean = ManagementFactory
+            .getOperatingSystemMXBean();
     private final ThreadMXBean threadMXBean = ManagementFactory.getThreadMXBean();
 
-    @Override
-    public String getCommandName() {
-        return "jvm";
-    }
 
     @Override
-    public void execute(Session session, Command command, Instrumentation inst,
+    public void execute(Session session, Instrumentation inst,
             MonitorCallback callback) {
-        Map<String,Object> info = new HashMap<>();
-        info.put("RUNTIME",getRuntime());
-        info.put("CLASS-LOADING",getClassLoading());
-        if(!garbageCollectorMXBeans.isEmpty()){
-            info.put("GARBAGE-COLLECTORS",getGarbageCollectors());
+        Map<String, Object> info = new HashMap<>();
+        info.put("RUNTIME", getRuntime());
+        info.put("CLASS-LOADING", getClassLoading());
+        if (!garbageCollectorMXBeans.isEmpty()) {
+            info.put("GARBAGE-COLLECTORS", getGarbageCollectors());
         }
         info.put("MEMORY", getMemory());
         info.put("OPERATING-SYSTEM", getOperatingSystem());
@@ -53,8 +50,8 @@ public class JvmCommandHandler implements CommandHandler {
         callback.execute(info);
     }
 
-    private Map<String,Object> getRuntime(){
-        Map<String,Object> data = new HashMap<>();
+    private Map<String, Object> getRuntime() {
+        Map<String, Object> data = new HashMap<>();
         data.put("MACHINE-NAME", runtimeMXBean.getName());
         data.put("JVM-START-TIME", runtimeMXBean.getStartTime());
         data.put("MANAGEMENT-SPEC-VERSION", runtimeMXBean.getManagementSpecVersion());
@@ -73,8 +70,8 @@ public class JvmCommandHandler implements CommandHandler {
         return data;
     }
 
-    private Map<String,Object> getClassLoading(){
-        Map<String,Object> data = new HashMap<>();
+    private Map<String, Object> getClassLoading() {
+        Map<String, Object> data = new HashMap<>();
         data.put("LOADED-CLASS-COUNT", classLoadingMXBean.getLoadedClassCount());
         data.put("TOTAL-LOADED-CLASS-COUNT", classLoadingMXBean.getTotalLoadedClassCount());
         data.put("UNLOADED-CLASS-COUNT", classLoadingMXBean.getUnloadedClassCount());
@@ -82,22 +79,24 @@ public class JvmCommandHandler implements CommandHandler {
         return data;
     }
 
-    private Map<String,Object> getGarbageCollectors(){
-        Map<String,Object> data = new HashMap<>();
+    private Map<String, Object> getGarbageCollectors() {
+        Map<String, Object> data = new HashMap<>();
         for (GarbageCollectorMXBean garbageCollectorMXBean : garbageCollectorMXBeans) {
             data.put(garbageCollectorMXBean.getName() + " [count/time]",
-                    garbageCollectorMXBean.getCollectionCount() + "/" + garbageCollectorMXBean.getCollectionTime() + "(ms)");
+                    garbageCollectorMXBean.getCollectionCount() + "/" + garbageCollectorMXBean
+                            .getCollectionTime() + "(ms)");
         }
         return data;
     }
 
 
-    private Map<String,Object> getMemory(){
-        Map<String,Object> data = new HashMap<>();
-        data.put("HEAP-MEMORY-USAGE [committed/init/max/used]", memoryMXBean.getHeapMemoryUsage().getCommitted()
-                + "/" + memoryMXBean.getHeapMemoryUsage().getInit()
-                + "/" + memoryMXBean.getHeapMemoryUsage().getMax()
-                + "/" + memoryMXBean.getHeapMemoryUsage().getUsed());
+    private Map<String, Object> getMemory() {
+        Map<String, Object> data = new HashMap<>();
+        data.put("HEAP-MEMORY-USAGE [committed/init/max/used]",
+                memoryMXBean.getHeapMemoryUsage().getCommitted()
+                        + "/" + memoryMXBean.getHeapMemoryUsage().getInit()
+                        + "/" + memoryMXBean.getHeapMemoryUsage().getMax()
+                        + "/" + memoryMXBean.getHeapMemoryUsage().getUsed());
         data.put("NO-HEAP-MEMORY-USAGE [committed/init/max/used]",
                 memoryMXBean.getNonHeapMemoryUsage().getCommitted()
                         + "/" + memoryMXBean.getNonHeapMemoryUsage().getInit()
@@ -109,8 +108,8 @@ public class JvmCommandHandler implements CommandHandler {
     }
 
 
-    private Map<String,Object> getOperatingSystem(){
-        Map<String,Object> data = new HashMap<>();
+    private Map<String, Object> getOperatingSystem() {
+        Map<String, Object> data = new HashMap<>();
         data.put("OS", operatingSystemMXBean.getName());
         data.put("ARCH", operatingSystemMXBean.getArch());
         data.put("PROCESSORS-COUNT", operatingSystemMXBean.getAvailableProcessors());
@@ -119,15 +118,14 @@ public class JvmCommandHandler implements CommandHandler {
         return data;
     }
 
-    private Map<String,Object> getThreads(){
-        Map<String,Object> data = new HashMap<>();
+    private Map<String, Object> getThreads() {
+        Map<String, Object> data = new HashMap<>();
         data.put("COUNT", threadMXBean.getThreadCount());
         data.put("DAEMON-COUNT", threadMXBean.getDaemonThreadCount());
         data.put("LIVE-COUNT", threadMXBean.getPeakThreadCount());
         data.put("STARTED-COUNT", threadMXBean.getTotalStartedThreadCount());
         return data;
     }
-
 
 
 }

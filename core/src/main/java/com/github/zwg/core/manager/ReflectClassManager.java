@@ -8,7 +8,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import jdk.internal.org.objectweb.asm.Type;
+import org.objectweb.asm.Type;
 
 /**
  * @author zwg

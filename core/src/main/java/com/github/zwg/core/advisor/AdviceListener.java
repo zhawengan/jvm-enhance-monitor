@@ -7,6 +7,14 @@ package com.github.zwg.core.advisor;
  */
 public interface AdviceListener {
 
+    default void start(){
+
+    }
+
+    default void destroy(){
+
+    }
+
     default void beforeMethod(ClassLoader classLoader, String className, String methodName,
             String methodDesc,
             Object target, Object[] args){
