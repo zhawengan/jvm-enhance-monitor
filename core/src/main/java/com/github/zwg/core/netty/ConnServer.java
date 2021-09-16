@@ -1,7 +1,6 @@
 package com.github.zwg.core.netty;
 
 import com.github.zwg.core.command.CommandFactory;
-import com.github.zwg.core.manager.ReflectClassManager;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
@@ -41,7 +40,6 @@ public class ConnServer {
         try {
             //初始化
             CommandFactory.getInstance();
-            ReflectClassManager.getInstance().initLoadedClass(getLoadClasses());
             ServerBootstrap bootstrap = new ServerBootstrap();
             bootstrap.group(bossGroup, workerGroup)
                     .channel(NioServerSocketChannel.class)

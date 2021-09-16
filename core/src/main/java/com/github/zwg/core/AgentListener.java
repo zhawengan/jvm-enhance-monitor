@@ -20,8 +20,10 @@ public class AgentListener {
 
     private final Boolean isStarted = false;
 
-    private AgentListener(String args, Instrumentation inst) {
+    private final Configuration configuration;
 
+    private AgentListener(String args, Instrumentation inst) {
+        configuration = new Configuration(args);
         this.inst = inst;
     }
 
@@ -31,9 +33,10 @@ public class AgentListener {
 
     public synchronized Boolean start() {
         if (!isStarted) {
+            ReflectClassManager.getInstance()
+                    .initLoadedClass(Arrays.asList(inst.getAllLoadedClasses()));
             ConnServer connServer = new ConnServer(inst);
-            connServer.start(8080);
-            ReflectClassManager.getInstance().initLoadedClass(Arrays.asList(inst.getAllLoadedClasses()));
+            connServer.start(configuration.getTargetPort());
             logger.info("agent listener started.");
         }
         return isStarted;

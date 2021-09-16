@@ -36,15 +36,16 @@ public class ReflectClassManager {
         return matchClasses;
     }
 
-    public Collection<Method> searchClassMethod(Matcher<String> classMatcher,Matcher<JemMethod> methodMatcher){
+    public Collection<Method> searchClassMethod(Matcher<String> classMatcher,
+            Matcher<JemMethod> methodMatcher) {
         Collection<Class<?>> classes = searchClass(classMatcher);
         Collection<Method> methods = new ArrayList<>();
-        for (Class<?> clazz:classes) {
+        for (Class<?> clazz : classes) {
             Set<Method> classMethods = getClassMethods(clazz);
-            classMethods.forEach(o->{
+            classMethods.forEach(o -> {
                 String methodDesc = Type.getType(o).toString();
-                JemMethod jemMethod = new JemMethod(o.getName(),methodDesc);
-                if(methodMatcher.match(jemMethod)){
+                JemMethod jemMethod = new JemMethod(o.getName(), methodDesc);
+                if (methodMatcher.match(jemMethod)) {
                     methods.add(o);
                 }
             });
@@ -53,18 +54,18 @@ public class ReflectClassManager {
     }
 
 
-    public Set<Method> getClassMethods(Class<?> clazz){
+    public Set<Method> getClassMethods(Class<?> clazz) {
         Set<Method> methods = new HashSet<>();
         //获取当前类的所有方法
         Method[] declaredMethods = clazz.getDeclaredMethods();
         methods.addAll(Arrays.asList(declaredMethods));
         //获取所有父类
         List<Class<?>> supperClasses = getSupperClasses(clazz);
-        for (Class<?> supperClass: supperClasses) {
+        for (Class<?> supperClass : supperClasses) {
             //遍历父类的方法，过滤掉private的
             Method[] supperClassDeclaredMethods = supperClass.getDeclaredMethods();
-            for (Method method:supperClassDeclaredMethods) {
-                if(Modifier.isPrivate(method.getModifiers())){
+            for (Method method : supperClassDeclaredMethods) {
+                if (Modifier.isPrivate(method.getModifiers())) {
                     continue;
                 }
                 methods.add(method);
@@ -87,7 +88,6 @@ public class ReflectClassManager {
         } while (true);
         return classes;
     }
-
 
 
     public void initLoadedClass(Collection<Class<?>> classes) {

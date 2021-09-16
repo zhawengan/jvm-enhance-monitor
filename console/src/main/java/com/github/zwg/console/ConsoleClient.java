@@ -95,6 +95,6 @@ public class ConsoleClient {
 
 
     public static void main(String[] args) throws IOException {
-        new ConsoleClient(new InetSocketAddress("127.0.0.1", 8080));
+        new ConsoleClient(new InetSocketAddress(args[0], Integer.valueOf(args[1])));
     }
 }
