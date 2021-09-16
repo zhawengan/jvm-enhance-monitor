@@ -49,4 +49,6 @@ public interface ParamConstant {
     String PERIOD = "p";
 
     String EXPRESS="e";
+
+    String WATCH = "w";
 }

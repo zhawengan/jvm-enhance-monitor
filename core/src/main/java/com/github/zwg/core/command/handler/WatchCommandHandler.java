@@ -1,11 +1,16 @@
 package com.github.zwg.core.command.handler;
 
+import static org.apache.commons.lang3.StringUtils.isBlank;
+
+import com.github.zwg.core.advisor.AbstractAdviceListener;
+import com.github.zwg.core.advisor.Advice;
 import com.github.zwg.core.advisor.AdviceListener;
 import com.github.zwg.core.advisor.AdviceListenerManager;
 import com.github.zwg.core.annotation.Arg;
 import com.github.zwg.core.annotation.Cmd;
 import com.github.zwg.core.asm.EnhancePoint;
 import com.github.zwg.core.asm.Enhancer;
+import com.github.zwg.core.command.AccessConstant;
 import com.github.zwg.core.command.CommandHandler;
 import com.github.zwg.core.command.MonitorCallback;
 import com.github.zwg.core.command.ParamConstant;
@@ -13,8 +18,17 @@ import com.github.zwg.core.manager.JemMethod;
 import com.github.zwg.core.manager.MatchStrategy;
 import com.github.zwg.core.manager.MethodMatcher;
 import com.github.zwg.core.manager.SearchMatcher;
+import com.github.zwg.core.netty.Message;
+import com.github.zwg.core.netty.MessageTypeEnum;
+import com.github.zwg.core.ongl.Express;
+import com.github.zwg.core.ongl.ExpressFactory;
 import com.github.zwg.core.session.Session;
+import com.github.zwg.core.statistic.InvokeCost;
+import com.github.zwg.core.util.JacksonObjectFormat;
+import io.netty.channel.Channel;
 import java.lang.instrument.Instrumentation;
+import java.util.concurrent.atomic.AtomicInteger;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * @author zwg
@@ -36,14 +50,39 @@ public class WatchCommandHandler implements CommandHandler {
     @Arg(name = ParamConstant.REG_KEY, required = false, defaultValue = "WILDCARD", description = "expression matching rules: wildcard, regular, equal")
     private String strategy;
 
-    private boolean isTracing = false;
+    @Arg(name = ParamConstant.WATCH, required = false, defaultValue = "b", description = "watch point. before(b),finish(f),exception(e),success(s)")
+    private String watchPoint;
+
+    @Arg(name = ParamConstant.NUMBER_PARAM, description = "Threshold of execution times")
+    private Integer threshold;
+
+    @Arg(name = ParamConstant.EXPRESS, description = "Conditional expression by OGNL")
+    private String conditionExpress;
+
+    private boolean isBefore = false;
+    private boolean isFinish = false;
+    private boolean isException = false;
+    private boolean isSuccess = false;
+    private final JacksonObjectFormat objectFormat = new JacksonObjectFormat();
 
     @Override
     public void execute(Session session, Instrumentation inst,
             MonitorCallback callback) {
-        Enhancer.enhance(inst, session.getSessionId(), isTracing, getPoint());
-        AdviceListener adviceListener = getAdviceListener();
+        watchPointInit();
+        Enhancer.enhance(inst, session.getSessionId(), false, getPoint());
+        AdviceListener adviceListener = getAdviceListener(session);
         AdviceListenerManager.reg(session.getSessionId(), adviceListener);
+    }
+
+    private void watchPointInit() {
+        if (StringUtils.isBlank(watchPoint)) {
+            isBefore = true;
+        } else {
+            isBefore = watchPoint.contains("b");
+            isFinish = watchPoint.contains("f");
+            isException = watchPoint.contains("e");
+            isSuccess = watchPoint.contains("s");
+        }
     }
 
     private EnhancePoint getPoint() {
@@ -51,30 +90,82 @@ public class WatchCommandHandler implements CommandHandler {
                 classPattern);
         JemMethod jemMethod = new JemMethod(methodPattern, methodDesc);
         MethodMatcher methodMatcher = new MethodMatcher(jemMethod);
-        EnhancePoint point = new EnhancePoint(classMatcher, methodMatcher);
-        return point;
+        return new EnhancePoint(classMatcher, methodMatcher);
     }
 
-    private AdviceListener getAdviceListener() {
-        return new AdviceListener() {
-            @Override
-            public void beforeMethod(ClassLoader classLoader, String className, String methodName,
-                    String methodDesc, Object target, Object[] args) {
+    private AdviceListener getAdviceListener(final Session session) {
+        return new AbstractAdviceListener() {
 
+            private final InvokeCost invokeCost = new InvokeCost();
+            private final AtomicInteger timesRef = new AtomicInteger();
+
+            @Override
+            public int getAccess() {
+                return AccessConstant.defaultMethodAccess();
             }
 
             @Override
-            public void afterMethodReturning(ClassLoader classLoader, String className,
-                    String methodName, String methodDesc, Object target, Object[] args,
-                    Object returnObject) {
-
+            public void processMethodBeforeAdvice(Advice advice) {
+                invokeCost.begin();
+                if (isBefore) {
+                    watching(advice);
+                }
             }
 
             @Override
-            public void afterMethodThrowing(ClassLoader classLoader, String className,
-                    String methodName, String methodDesc, Object target, Object[] args,
-                    Throwable throwable) {
+            public void processMethodReturningAdvice(Advice advice) {
+                if (isSuccess) {
+                    watching(advice);
+                }
+            }
 
+            @Override
+            public void processMethodThrowingAdvice(Advice advice) {
+                if (isException) {
+                    watching(advice);
+                }
+            }
+
+            @Override
+            public void processMethodFinishAdvice(Advice advice) {
+                if (isFinish) {
+                    watching(advice);
+                }
+            }
+
+            private boolean isOverThreshold(int currentTimes) {
+                return null != threshold
+                        && currentTimes >= threshold;
+            }
+
+            private boolean isInCondition(Express express) {
+                try {
+                    return isBlank(conditionExpress)
+                            || express.is(conditionExpress);
+                } catch (Exception e) {
+                    return false;
+                }
+            }
+
+            private void watching(Advice advice) {
+                try {
+                    Express express = ExpressFactory.newExpress(advice)
+                            .bind("cost", invokeCost.cost());
+                    if (isInCondition(express)) {
+                        Object result = express.get(conditionExpress);
+                        Channel channel = session.getChannel();
+                        Message response = new Message();
+                        response.setMessageType(MessageTypeEnum.RESPONSE);
+                        response.setBody(objectFormat.toJsonPretty(result));
+                        channel.writeAndFlush(response, channel.voidPromise());
+                        if (isOverThreshold(timesRef.incrementAndGet())) {
+                            session.getChannel().close();
+                        }
+                    }
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
         };
     }
