@@ -75,6 +75,7 @@
         <module>agent</module>
         <module>core</module>
         <module>console</module>
+        <module>package</module>
     </modules>
     <packaging>pom</packaging>
 
