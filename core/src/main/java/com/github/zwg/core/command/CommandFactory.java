@@ -37,7 +37,7 @@ public class CommandFactory {
                 commandHandlers.put(cmd.name(), clazz);
             }
         }
-        logger.info("success loaded command handlers:{}", commandHandlers);
+        logger.debug("success loaded command handlers:{}", commandHandlers);
     }
 
     public static CommandFactory getInstance() {

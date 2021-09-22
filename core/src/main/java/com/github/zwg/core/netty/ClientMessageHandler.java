@@ -1,13 +1,10 @@
 package com.github.zwg.core.netty;
 
-import com.github.zwg.core.util.JacksonObjectFormat;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.timeout.IdleState;
 import io.netty.handler.timeout.IdleStateEvent;
 import java.io.PrintWriter;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,11 +17,9 @@ public class ClientMessageHandler extends SimpleChannelInboundHandler<Message> {
 
     private final Logger logger = LoggerFactory.getLogger(ClientMessageHandler.class);
     private final PrintWriter writer;
-    private final ExecutorService executor = Executors.newSingleThreadExecutor();
-    private final JacksonObjectFormat objectFormat = new JacksonObjectFormat();
     private final String sessionId;
 
-    public ClientMessageHandler(String sessionId,PrintWriter writer) {
+    public ClientMessageHandler(String sessionId, PrintWriter writer) {
 
         this.writer = writer;
         this.sessionId = sessionId;
@@ -33,15 +28,15 @@ public class ClientMessageHandler extends SimpleChannelInboundHandler<Message> {
     @Override
     public void channelRead0(ChannelHandlerContext ctx, Message message) throws Exception {
         //忽略PONG消息
-        if(message.getMessageType()==MessageTypeEnum.PONG){
+        if (message.getMessageType() == MessageTypeEnum.PONG) {
             logger.debug("client receive message:{}", message);
             return;
         }
-        if(message.getMessageType()==MessageTypeEnum.RESPONSE){
+        if (message.getMessageType() == MessageTypeEnum.RESPONSE) {
             writer.println(message.getBody());
             writer.flush();
             printPrompt();
-        }else {
+        } else {
             printPrompt();
         }
     }
@@ -64,7 +59,7 @@ public class ClientMessageHandler extends SimpleChannelInboundHandler<Message> {
         }
     }
 
-    private void printPrompt(){
+    private void printPrompt() {
         writer.println();
         writer.print(Constants.PROMPT);
         writer.flush();

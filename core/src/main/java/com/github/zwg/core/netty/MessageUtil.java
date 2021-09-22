@@ -34,4 +34,16 @@ public class MessageUtil {
         return message;
     }
 
+    public static Message buildRegister(String sessionId, Object data) {
+        return wrap(sessionId, MessageTypeEnum.REGISTER, null, data);
+    }
+
+    public static Message buildRequest(String sessionId, Object data) {
+        return wrap(sessionId, MessageTypeEnum.REQUEST, null, data);
+    }
+
+    public static Message buildResponse(String sessionId, Object data) {
+        return wrap(sessionId, MessageTypeEnum.RESPONSE, null, data);
+    }
+
 }

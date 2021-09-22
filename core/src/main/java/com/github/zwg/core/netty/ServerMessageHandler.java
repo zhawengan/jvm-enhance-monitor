@@ -5,6 +5,7 @@ import com.github.zwg.core.command.CommandFactory;
 import com.github.zwg.core.command.CommandHandler;
 import com.github.zwg.core.execption.BadCommandException;
 import com.github.zwg.core.session.DefaultSessionManager;
+import com.github.zwg.core.session.Session;
 import com.github.zwg.core.util.JacksonObjectFormat;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
@@ -39,11 +40,17 @@ public class ServerMessageHandler extends SimpleChannelInboundHandler<Message> {
             channel.writeAndFlush(message, channel.voidPromise());
             return;
         }
-        logger.debug("server receive message:{}", message);
+        String sessionId = message.getSessionId();
+        if (message.getMessageType() == MessageTypeEnum.REGISTER) {
+            DefaultSessionManager.getInstance().create(sessionId, channel);
+            logger.info("register success. sessionId:{},message:{}", sessionId, message.getBody());
+            return;
+        }
         if (StringUtils.isBlank(message.getBody())) {
             logger.debug("receive empty message. {}", message);
             return;
         }
+        logger.debug("server receive message:{}", message);
         Command command = objectFormat.fromJson(message.getBody(), Command.class);
         CommandHandler commandHandler = CommandFactory.getInstance()
                 .getExecuteCommandHandler(command);
@@ -55,7 +62,8 @@ public class ServerMessageHandler extends SimpleChannelInboundHandler<Message> {
             return;
         }
         try {
-            commandHandler.execute(DefaultSessionManager.getInstance().get(channel), inst,
+            Session session = DefaultSessionManager.getInstance().get(sessionId);
+            commandHandler.execute(session, inst,
                     result -> {
                         Message response = new Message();
                         response.setMessageType(MessageTypeEnum.RESPONSE);
@@ -63,10 +71,7 @@ public class ServerMessageHandler extends SimpleChannelInboundHandler<Message> {
                         channel.writeAndFlush(response, channel.voidPromise());
                     });
         } catch (BadCommandException ex) {
-            Message response = new Message();
-            response.setBody(ex.getMessage());
-            response.setMessageType(MessageTypeEnum.RESPONSE);
-            channel.writeAndFlush(response, channel.voidPromise());
+            channel.writeAndFlush(MessageUtil.buildResponse(sessionId,ex.getMessage()), channel.voidPromise());
         }
         sendEmptyMessage(channel);
     }

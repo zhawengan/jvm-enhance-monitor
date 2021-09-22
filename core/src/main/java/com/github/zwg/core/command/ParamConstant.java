@@ -19,7 +19,7 @@ public interface ParamConstant {
     String COMMAND_TOP_THREAD = "top";
     String COMMAND_TRACE = "trace";
     String COMMAND_WATCH = "watch";
-
+    String COMMAND_EXPORT = "export";
 
     /**
      * command中获取匹配方式的键
@@ -51,4 +51,6 @@ public interface ParamConstant {
     String EXPRESS="e";
 
     String WATCH = "w";
+
+    String FILE_LOCATION = "f";
 }

@@ -44,12 +44,18 @@ public class ConnClient {
                         }
                     });
             Channel channel = bootstrap.connect(host, port).sync().channel();
+            register(sessionId, channel);
             return channel;
         } catch (Exception e) {
             e.printStackTrace();
             group.shutdownGracefully();
         }
         return null;
+    }
+
+    private void register(String sessionId,Channel channel){
+        Message message = MessageUtil.buildRegister(sessionId, "I'm a jem client");
+        channel.writeAndFlush(message,channel.voidPromise());
     }
 
 }

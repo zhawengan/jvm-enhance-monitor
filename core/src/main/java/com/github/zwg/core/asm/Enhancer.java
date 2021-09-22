@@ -14,6 +14,8 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import org.objectweb.asm.Type;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author zwg
@@ -22,9 +24,11 @@ import org.objectweb.asm.Type;
  */
 public class Enhancer {
 
+    private static final Logger logger = LoggerFactory.getLogger(Enhancer.class);
     public static void enhance(Instrumentation inst, String sessionId, boolean isTracing,
             EnhancePoint point) {
         Map<Class<?>, Matcher<JemMethod>> enhanceMap = toEnhanceMap(point);
+        logger.info("find enhance classes:{}", enhanceMap);
         if (enhanceMap.isEmpty()) {
             return;
         }

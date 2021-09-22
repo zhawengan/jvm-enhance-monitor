@@ -1,13 +1,13 @@
 package com.github.zwg.core.asm;
 
-import java.util.ArrayList;
-import java.util.Collection;
 import org.apache.commons.lang3.StringUtils;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.commons.AdviceAdapter;
 import org.objectweb.asm.commons.Method;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author zwg
@@ -16,10 +16,11 @@ import org.objectweb.asm.commons.Method;
  */
 public class JemAdviceAdapter extends AdviceAdapter {
 
+    private final Logger logger = LoggerFactory.getLogger(JemAdviceAdapter.class);
     private static final Type ASM_TYPE_INT = Type.getType(int.class);
     private final Label beginLabel = new Label();
     private final Label endLabel = new Label();
-    private final Type ASM_TYPE_MONITOR = Type.getType("com.github.zwg.agent.MonitorProxy");
+    private final Type ASM_TYPE_MONITOR = Type.getType("Lcom/github/zwg/agent/MonitorProxy;");
     private final Type ASM_TYPE_METHOD = Type.getType(java.lang.reflect.Method.class);
     private final Type ASM_TYPE_OBJECT = Type.getType(Object.class);
     private final Method ASM_METHOD_METHOD_INVOKE = Method
@@ -29,6 +30,7 @@ public class JemAdviceAdapter extends AdviceAdapter {
     private final Type ASM_TYPE_CLASS = Type.getType(Class.class);
     private final Type ASM_TYPE_THROWABLE = Type.getType(Throwable.class);
     private final Type ASM_TYPE_INTEGER = Type.getType(Integer.class);
+    private final Type ASM_TYPE_CLASS_LOADER = Type.getType(ClassLoader.class);
     private final String sessionId;
     private final boolean isTracing;
     private final String className;
@@ -38,7 +40,6 @@ public class JemAdviceAdapter extends AdviceAdapter {
     private Integer currentLineNumber;
 
     private final CodeLock codeLock = new AsmCodeLock(this);
-    private final Collection<AsmTryCatchBlock> asmTryCatchBlocks = new ArrayList<>();
 
     protected JemAdviceAdapter(String sessionId, boolean isTracing, String className,
             MethodVisitor methodVisitor,
@@ -54,6 +55,7 @@ public class JemAdviceAdapter extends AdviceAdapter {
 
     @Override
     protected void onMethodEnter() {
+        logger.debug("visit method enter. class:{},method:{}", this.className, this.methodName);
         codeLock.lockBlockCode(() -> {
             /**通过字节码方式，调用MonitorProxy的ON_METHOD_BEFORE方法,实际代理对象为
              *AdviceListenerManager.onMethodBefore(String sessionId,
@@ -75,12 +77,13 @@ public class JemAdviceAdapter extends AdviceAdapter {
             invokeVirtual(ASM_TYPE_METHOD, ASM_METHOD_METHOD_INVOKE);
             pop();
         });
-
         mark(beginLabel);
     }
 
     @Override
     protected void onMethodExit(int opcode) {
+        logger.debug("visit method exit. class:{},method:{},opcode:{}", this.className,
+                this.methodName, opcode);
         if (opcode != ATHROW) {
             codeLock.lockBlockCode(() -> {
                 loadReturn(opcode);
@@ -101,8 +104,9 @@ public class JemAdviceAdapter extends AdviceAdapter {
 
     @Override
     public void visitMaxs(int maxStack, int maxLocals) {
+        logger.debug("visit method maxs. class:{},method:{}", this.className, this.methodName);
         mark(endLabel);
-        visitTryCatchBlock(beginLabel, endLabel, mark(), ASM_TYPE_THROWABLE.getInternalName());
+        catchException(beginLabel, endLabel, ASM_TYPE_THROWABLE);
         codeLock.lockBlockCode(() -> {
             //加载异常
             dup();
@@ -117,6 +121,7 @@ public class JemAdviceAdapter extends AdviceAdapter {
             invokeVirtual(ASM_TYPE_METHOD, ASM_METHOD_METHOD_INVOKE);
             pop();
         });
+        throwException();
         super.visitMaxs(maxStack, maxLocals);
     }
 
@@ -164,16 +169,9 @@ public class JemAdviceAdapter extends AdviceAdapter {
 
     }
 
-    @Override
-    public void visitTryCatchBlock(Label start, Label end, Label handler, String type) {
-        asmTryCatchBlocks.add(new AsmTryCatchBlock(start, endLabel, handler, type));
-    }
 
     @Override
     public void visitEnd() {
-        for (AsmTryCatchBlock tcb : asmTryCatchBlocks) {
-            super.visitTryCatchBlock(tcb.start, tcb.end, tcb.handler, tcb.type);
-        }
         super.visitEnd();
     }
 
@@ -189,6 +187,10 @@ public class JemAdviceAdapter extends AdviceAdapter {
         dup();
         push(1);
         loadClassLoader();
+        arrayStore(ASM_TYPE_CLASS_LOADER);
+
+        dup();
+        push(2);
         push(tranClassName(className));
         arrayStore(ASM_TYPE_STRING);
 
@@ -300,25 +302,16 @@ public class JemAdviceAdapter extends AdviceAdapter {
         arrayStore(ASM_TYPE_STRING);
     }
 
-    /**通过字节码方式，调用MonitorProxy的 INVOKING_BEFORE,INVOKING_RETURN,INVOKING_THROW 方法,实际代理对象为
-     *AdviceListenerManager.beforeTraceInvoking(String sessionId,
-     *             Integer lineNumber,
-     *             String owner,
-     *             String name,
-     *             String desc)
+    /**
+     * 通过字节码方式，调用MonitorProxy的 INVOKING_BEFORE,INVOKING_RETURN,INVOKING_THROW 方法,实际代理对象为
+     * AdviceListenerManager.beforeTraceInvoking(String sessionId, Integer lineNumber, String owner,
+     * String name, String desc)
      *
-     *AdviceListenerManager.afterTraceInvoking(String sessionId,
-     *             Integer lineNumber,
-     *             String owner,
-     *             String name,
-     *             String desc)
+     * AdviceListenerManager.afterTraceInvoking(String sessionId, Integer lineNumber, String owner,
+     * String name, String desc)
      *
-     *AdviceListenerManager.afterTraceThrowing(String sessionId,
-     *             Integer lineNumber,
-     *             String owner,
-     *             String name,
-     *             String desc,
-     *             String throwException)
+     * AdviceListenerManager.afterTraceThrowing(String sessionId, Integer lineNumber, String owner,
+     * String name, String desc, String throwException)
      */
     private void tracing(TracingType tracingType, String owner, String name, String desc) {
 

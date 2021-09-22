@@ -2,13 +2,15 @@ package com.github.zwg.core.asm;
 
 import com.github.zwg.core.manager.JemMethod;
 import com.github.zwg.core.manager.Matcher;
+import com.github.zwg.core.util.ExportClassUtil;
 import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.IllegalClassFormatException;
-import java.lang.reflect.Method;
 import java.security.ProtectionDomain;
 import java.util.Map;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author zwg
@@ -16,6 +18,8 @@ import org.objectweb.asm.ClassWriter;
  * @date 2021/9/5
  */
 public class EnhanceTransformer implements ClassFileTransformer {
+
+    private final Logger logger = LoggerFactory.getLogger(EnhanceTransformer.class);
 
     private final String sessionId;
     private final boolean isTracing;
@@ -31,12 +35,14 @@ public class EnhanceTransformer implements ClassFileTransformer {
     public byte[] transform(ClassLoader loader, String className, Class<?> classBeingRedefined,
             ProtectionDomain protectionDomain, byte[] classfileBuffer)
             throws IllegalClassFormatException {
+        logger.info("prepare to transform. className:{}", className);
         //过滤掉非目标类
         if (target.get(classBeingRedefined) == null) {
             return null;
         }
         byte[] byteCodes = EnhanceClassManager.getInstance().get(classBeingRedefined);
         if (byteCodes == null) {
+            logger.info("get cached bytecode null, use classFileBuffer. className:{}", className);
             byteCodes = classfileBuffer;
         }
         ClassReader cr = new ClassReader(byteCodes);
@@ -45,6 +51,11 @@ public class EnhanceTransformer implements ClassFileTransformer {
         cr.accept(new AdviceClassVisitor(sessionId, isTracing, className, methodMatcher, cw),
                 ClassReader.EXPAND_FRAMES);
         byte[] classBytes = cw.toByteArray();
+        if(classBytes!=null){
+            ExportClassUtil.dumpClassIfNecessary(className,classBytes);
+        }else {
+            logger.info("ClassWrite create a empty file. className:{}",className);
+        }
         EnhanceClassManager.getInstance().put(classBeingRedefined, classBytes);
         return classBytes;
     }
