@@ -25,10 +25,10 @@
             </goals>
             <configuration>
               <tasks>
-                <mkdir dir="./target"/>
-                <copy file="../agent/target/enhance-agent-1.0-SNAPSHOT.jar" todir="target" overwrite="true" />
-                <copy file="../console/target/enhance-console-1.0-SNAPSHOT.jar" todir="target" overwrite="true" />
-                <copy file="../core/target/enhance-core-1.0-SNAPSHOT.jar" todir="target" overwrite="true" />
+                <mkdir dir="../target"/>
+                <copy file="../agent/target/enhance-agent-1.0-SNAPSHOT.jar" todir="../target" overwrite="true" />
+                <copy file="../console/target/enhance-console-1.0-SNAPSHOT.jar" todir="../target" overwrite="true" />
+                <copy file="../core/target/enhance-core-1.0-SNAPSHOT.jar" todir="../target" overwrite="true" />
               </tasks>
             </configuration>
           </execution>

@@ -22,4 +22,12 @@ public class JemMethod {
     public String getDesc() {
         return desc;
     }
+
+    @Override
+    public String toString() {
+        return "JemMethod{" +
+                "name='" + name + '\'' +
+                ", desc='" + desc + '\'' +
+                '}';
+    }
 }

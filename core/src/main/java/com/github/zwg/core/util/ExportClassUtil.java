@@ -50,6 +50,8 @@ public class ExportClassUtil {
         // 将类字节码写入文件
         try {
             writeByteArrayToFile(dumpClassFile, data);
+            logger.info("dump class file success. className:{},filePath:{}", className,
+                    dumpClassFile.getAbsolutePath());
         } catch (IOException e) {
             logger.warn("dump class:{} to file {} failed.", className, dumpClassFile, e);
         }

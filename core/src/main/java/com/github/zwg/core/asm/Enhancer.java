@@ -35,10 +35,12 @@ public class Enhancer {
         EnhanceTransformer enhanceTransformer = new EnhanceTransformer(sessionId, isTracing,
                 enhanceMap);
         try {
+            logger.info("find enhancer:{}", enhanceTransformer);
             inst.addTransformer(enhanceTransformer);
             int size = enhanceMap.size();
             Class<?>[] classArray = new Class<?>[size];
             arraycopy(enhanceMap.keySet().toArray(), 0, classArray, 0, size);
+            logger.info("find enhancer classes:{}", classArray);
             inst.retransformClasses(classArray);
         } catch (Exception ex) {
             ex.printStackTrace();

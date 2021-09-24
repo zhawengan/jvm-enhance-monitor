@@ -9,8 +9,6 @@ import java.security.ProtectionDomain;
 import java.util.Map;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * @author zwg
@@ -19,13 +17,14 @@ import org.slf4j.LoggerFactory;
  */
 public class EnhanceTransformer implements ClassFileTransformer {
 
-    private final Logger logger = LoggerFactory.getLogger(EnhanceTransformer.class);
+    //private final Logger logger = LoggerFactory.getLogger(EnhanceTransformer.class);
 
     private final String sessionId;
     private final boolean isTracing;
     private final Map<Class<?>, Matcher<JemMethod>> target;
 
-    public EnhanceTransformer(String sessionId, boolean isTracing, Map<Class<?>, Matcher<JemMethod>> target) {
+    public EnhanceTransformer(String sessionId, boolean isTracing,
+            Map<Class<?>, Matcher<JemMethod>> target) {
         this.sessionId = sessionId;
         this.isTracing = isTracing;
         this.target = target;
@@ -35,14 +34,15 @@ public class EnhanceTransformer implements ClassFileTransformer {
     public byte[] transform(ClassLoader loader, String className, Class<?> classBeingRedefined,
             ProtectionDomain protectionDomain, byte[] classfileBuffer)
             throws IllegalClassFormatException {
-        logger.info("prepare to transform. className:{}", className);
+        //logger.info("prepare to transform. className:{}", className);
+        System.out.println("prepare to transform. className:"+className);
         //过滤掉非目标类
         if (target.get(classBeingRedefined) == null) {
             return null;
         }
         byte[] byteCodes = EnhanceClassManager.getInstance().get(classBeingRedefined);
         if (byteCodes == null) {
-            logger.info("get cached bytecode null, use classFileBuffer. className:{}", className);
+            //logger.info("get cached bytecode null, use classFileBuffer. className:{}", className);
             byteCodes = classfileBuffer;
         }
         ClassReader cr = new ClassReader(byteCodes);
@@ -51,10 +51,10 @@ public class EnhanceTransformer implements ClassFileTransformer {
         cr.accept(new AdviceClassVisitor(sessionId, isTracing, className, methodMatcher, cw),
                 ClassReader.EXPAND_FRAMES);
         byte[] classBytes = cw.toByteArray();
-        if(classBytes!=null){
-            ExportClassUtil.dumpClassIfNecessary(className,classBytes);
-        }else {
-            logger.info("ClassWrite create a empty file. className:{}",className);
+        if (classBytes != null) {
+            ExportClassUtil.dumpClassIfNecessary(className, classBytes);
+        } else {
+            //logger.info("ClassWrite create a empty file. className:{}",className);
         }
         EnhanceClassManager.getInstance().put(classBeingRedefined, classBytes);
         return classBytes;

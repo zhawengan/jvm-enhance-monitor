@@ -3,6 +3,8 @@ package com.github.zwg.core.session;
 import io.netty.channel.Channel;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author zwg
@@ -11,6 +13,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class DefaultSessionManager {
 
+    private final Logger logger = LoggerFactory.getLogger(DefaultSessionManager.class);
     private static DefaultSessionManager instance;
     private final Map<String, Session> sessionMap = new ConcurrentHashMap<>();
     private final Map<Channel, Session> channelMap = new ConcurrentHashMap<>();
@@ -20,8 +23,10 @@ public class DefaultSessionManager {
     }
 
     public Session create(String sessionId, Channel channel) {
-        Session session = sessionMap.putIfAbsent(sessionId, new Session(sessionId, channel));
-        channelMap.putIfAbsent(channel, session);
+        Session session = new Session(sessionId, channel);
+        sessionMap.put(sessionId, session);
+        channelMap.put(channel, session);
+        logger.info("register channel. sessionId:{},channel:{}", sessionId, channel);
         return session;
     }
 

@@ -29,6 +29,8 @@ import io.netty.channel.Channel;
 import java.lang.instrument.Instrumentation;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author zwg
@@ -37,6 +39,8 @@ import org.apache.commons.lang3.StringUtils;
  */
 @Cmd(name = ParamConstant.COMMAND_WATCH)
 public class WatchCommandHandler implements CommandHandler {
+
+    private final Logger logger = LoggerFactory.getLogger(WatchCommandHandler.class);
 
     @Arg(name = ParamConstant.CLASS_KEY, description = "find class expression")
     private String classPattern;
@@ -72,6 +76,7 @@ public class WatchCommandHandler implements CommandHandler {
         Enhancer.enhance(inst, session.getSessionId(), false, getPoint());
         AdviceListener adviceListener = getAdviceListener(session);
         AdviceListenerManager.reg(session.getSessionId(), adviceListener);
+        logger.info("watch command handler registered。session:{}", session);
     }
 
     private void watchPointInit() {
@@ -110,6 +115,7 @@ public class WatchCommandHandler implements CommandHandler {
                 if (isBefore) {
                     watching(advice);
                 }
+                logger.info("processMethodBeforeAdvice, advice:{}", advice);
             }
 
             @Override
