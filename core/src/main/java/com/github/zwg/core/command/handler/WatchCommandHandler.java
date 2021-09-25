@@ -60,7 +60,10 @@ public class WatchCommandHandler implements CommandHandler {
     @Arg(name = ParamConstant.NUMBER_PARAM, description = "Threshold of execution times")
     private Integer threshold;
 
-    @Arg(name = ParamConstant.EXPRESS, description = "Conditional expression by OGNL")
+    @Arg(name = ParamConstant.EXPRESS, description = "expression by OGNL")
+    private String express;
+
+    @Arg(name = ParamConstant.EXPRESS_CONDITION, description = "Conditional expression by OGNL")
     private String conditionExpress;
 
     private boolean isBefore = false;
@@ -123,6 +126,7 @@ public class WatchCommandHandler implements CommandHandler {
                 if (isSuccess) {
                     watching(advice);
                 }
+                logger.info("processMethodReturningAdvice, advice:{}", advice);
             }
 
             @Override
@@ -130,6 +134,7 @@ public class WatchCommandHandler implements CommandHandler {
                 if (isException) {
                     watching(advice);
                 }
+                logger.info("processMethodThrowingAdvice, advice:{}", advice);
             }
 
             @Override
@@ -137,6 +142,7 @@ public class WatchCommandHandler implements CommandHandler {
                 if (isFinish) {
                     watching(advice);
                 }
+                logger.info("processMethodFinishAdvice, advice:{}", advice);
             }
 
             private boolean isOverThreshold(int currentTimes) {
@@ -154,11 +160,13 @@ public class WatchCommandHandler implements CommandHandler {
             }
 
             private void watching(Advice advice) {
+                logger.info("do watching, advice:{}", advice);
                 try {
-                    Express express = ExpressFactory.newExpress(advice)
+                    Express exp = ExpressFactory.newExpress(advice)
                             .bind("cost", invokeCost.cost());
-                    if (isInCondition(express)) {
-                        Object result = express.get(conditionExpress);
+                    if (isInCondition(exp)) {
+                        Object result = exp.get(express);
+                        logger.info("do watching. result:{}, session:{}", result, session);
                         Channel channel = session.getChannel();
                         Message response = new Message();
                         response.setMessageType(MessageTypeEnum.RESPONSE);
@@ -167,6 +175,10 @@ public class WatchCommandHandler implements CommandHandler {
                         if (isOverThreshold(timesRef.incrementAndGet())) {
                             session.getChannel().close();
                         }
+                    }else {
+                        logger.info(
+                                "do watching, express is not in condition. express:{},condition:{}",
+                                advice, conditionExpress);
                     }
 
                 } catch (Exception e) {

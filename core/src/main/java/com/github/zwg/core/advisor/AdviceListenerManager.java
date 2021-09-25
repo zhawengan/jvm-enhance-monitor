@@ -3,6 +3,8 @@ package com.github.zwg.core.advisor;
 import java.util.Map;
 import java.util.Stack;
 import java.util.concurrent.ConcurrentHashMap;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author zwg
@@ -11,6 +13,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class AdviceListenerManager {
 
+    private static final Logger logger = LoggerFactory.getLogger(AdviceListenerManager.class);
     private static final int FRAME_STACK_SIZE = 7;
     private static final Map<String, AdviceListener> advices = new ConcurrentHashMap<>();
     private static final Map<Thread, Stack<Object[]>> threadMethodStash = new ConcurrentHashMap<>();
@@ -41,6 +44,7 @@ public class AdviceListenerManager {
             String methodDesc,
             Object target,
             Object[] args) {
+        logger.info("prepare to invoke before method.");
         if (!advices.containsKey(sessionId)) {
             return;
         }
@@ -62,12 +66,13 @@ public class AdviceListenerManager {
             methodStash[6] = adviceListener;
 
             before(adviceListener, classLoader, className, methodName, methodDesc, target, args);
-
+            logger.info("invoke before method success.");
             saveThreadMethodStash(methodStash);
+            logger.info("save method stash success.");
         } finally {
             isSelfCall.set(false);
         }
-
+        logger.info("onMethodBefore process success.");
     }
 
 
@@ -166,7 +171,7 @@ public class AdviceListenerManager {
             Object target = methodStash[4];
             Object[] args = (Object[]) methodStash[5];
             AdviceListener adviceListener = (AdviceListener) methodStash[6];
-            if (isThrowing) {
+            if (!isThrowing) {
                 afterReturning(adviceListener, classLoader, className, methodName, methodDesc,
                         target, args, returnOrThrowable);
             } else {
@@ -220,7 +225,7 @@ public class AdviceListenerManager {
 
     public static void saveThreadMethodStash(Object[] methodStash) {
         Thread thread = Thread.currentThread();
-        Stack<Object[]> stashData = threadMethodStash.putIfAbsent(thread, new Stack<>());
+        Stack<Object[]> stashData = threadMethodStash.computeIfAbsent(thread, k -> new Stack<>());
         stashData.push(methodStash);
     }
 

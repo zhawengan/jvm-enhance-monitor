@@ -36,7 +36,7 @@ public class Enhancer {
                 enhanceMap);
         try {
             logger.info("find enhancer:{}", enhanceTransformer);
-            inst.addTransformer(enhanceTransformer);
+            inst.addTransformer(enhanceTransformer, true);
             int size = enhanceMap.size();
             Class<?>[] classArray = new Class<?>[size];
             arraycopy(enhanceMap.keySet().toArray(), 0, classArray, 0, size);

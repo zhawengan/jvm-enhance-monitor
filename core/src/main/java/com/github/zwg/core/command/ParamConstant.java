@@ -53,4 +53,6 @@ public interface ParamConstant {
     String WATCH = "w";
 
     String FILE_LOCATION = "f";
+
+    String EXPRESS_CONDITION="ed";
 }

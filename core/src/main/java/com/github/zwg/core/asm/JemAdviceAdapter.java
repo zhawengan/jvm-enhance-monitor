@@ -220,17 +220,18 @@ public class JemAdviceAdapter extends AdviceAdapter {
         pop2();
         push(2);
         newArray(ASM_TYPE_OBJECT);
+
+        dup();
+        push(0);
+        push(sessionId);
+        arrayStore(ASM_TYPE_STRING);
+
         dup();
         dup2X1();
         pop2();
-        push(0);
+        push(1);
         swap();
         arrayStore(ASM_TYPE_OBJECT);
-
-        dup();
-        push(1);
-        push(sessionId);
-        arrayStore(ASM_TYPE_STRING);
     }
 
 
@@ -290,16 +291,16 @@ public class JemAdviceAdapter extends AdviceAdapter {
         newArray(ASM_TYPE_OBJECT);
 
         dup();
-        dup2X1();
-        pop2();
         push(0);
-        swap();
-        arrayStore(ASM_TYPE_THROWABLE);
-
-        dup();
-        push(1);
         push(sessionId);
         arrayStore(ASM_TYPE_STRING);
+
+        dup();
+        dup2X1();
+        pop2();
+        push(1);
+        swap();
+        arrayStore(ASM_TYPE_THROWABLE);
     }
 
     /**

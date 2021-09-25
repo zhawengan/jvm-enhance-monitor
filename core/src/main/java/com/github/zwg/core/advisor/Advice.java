@@ -1,6 +1,7 @@
 package com.github.zwg.core.advisor;
 
 import com.github.zwg.core.command.AccessConstant;
+import java.util.Arrays;
 
 /**
  * @author zwg
@@ -132,5 +133,28 @@ public class Advice {
 
     public void setThrowable(Throwable throwable) {
         this.throwable = throwable;
+    }
+
+    @Override
+    public String toString() {
+        return "Advice{" +
+                "traceId='" + traceId + '\'' +
+                ", classLoader=" + classLoader +
+                ", className='" + className + '\'' +
+                ", methodName='" + methodName + '\'' +
+                ", methodDesc='" + methodDesc + '\'' +
+                ", target=" + target +
+                ", params=" + Arrays.toString(params) +
+                ", returnObj=" + returnObj +
+                ", throwable=" + throwable +
+                ", isBefore=" + isBefore +
+                ", isThrow=" + isThrow +
+                ", isReturn=" + isReturn +
+                ", isTracingBefore=" + isTracingBefore +
+                ", isTracingThrowing=" + isTracingThrowing +
+                ", isTracingReturning=" + isTracingReturning +
+                ", access=" + access +
+                ", tracingAdvice=" + tracingAdvice +
+                '}';
     }
 }

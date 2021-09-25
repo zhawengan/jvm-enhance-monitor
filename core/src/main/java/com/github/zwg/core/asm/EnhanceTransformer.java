@@ -9,6 +9,8 @@ import java.security.ProtectionDomain;
 import java.util.Map;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author zwg
@@ -17,7 +19,7 @@ import org.objectweb.asm.ClassWriter;
  */
 public class EnhanceTransformer implements ClassFileTransformer {
 
-    //private final Logger logger = LoggerFactory.getLogger(EnhanceTransformer.class);
+    private final Logger logger = LoggerFactory.getLogger(EnhanceTransformer.class);
 
     private final String sessionId;
     private final boolean isTracing;
@@ -34,29 +36,32 @@ public class EnhanceTransformer implements ClassFileTransformer {
     public byte[] transform(ClassLoader loader, String className, Class<?> classBeingRedefined,
             ProtectionDomain protectionDomain, byte[] classfileBuffer)
             throws IllegalClassFormatException {
-        //logger.info("prepare to transform. className:{}", className);
-        System.out.println("prepare to transform. className:"+className);
+        logger.debug("prepare to transform. className:{}", className);
         //过滤掉非目标类
         if (target.get(classBeingRedefined) == null) {
+            logger.warn("class is not enhance target. class:{}", classBeingRedefined);
             return null;
         }
-        byte[] byteCodes = EnhanceClassManager.getInstance().get(classBeingRedefined);
-        if (byteCodes == null) {
-            //logger.info("get cached bytecode null, use classFileBuffer. className:{}", className);
-            byteCodes = classfileBuffer;
-        }
-        ClassReader cr = new ClassReader(byteCodes);
+        logger.warn("class is enhance target. class:{}", classBeingRedefined);
+//        byte[] byteCodes = EnhanceClassManager.getInstance().get(classBeingRedefined);
+//        if (byteCodes == null) {
+//            logger.info("get cached bytecode null, use classFileBuffer. className:{}", className);
+//            byteCodes = classfileBuffer;
+//        }
+        logger.info("get cached bytecode not null, use classFileBuffer. className:{}", className);
+        ClassReader cr = new ClassReader(classfileBuffer);
         Matcher<JemMethod> methodMatcher = target.get(classBeingRedefined);
         ClassWriter cw = new ClassWriter(cr, ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS);
         cr.accept(new AdviceClassVisitor(sessionId, isTracing, className, methodMatcher, cw),
                 ClassReader.EXPAND_FRAMES);
         byte[] classBytes = cw.toByteArray();
-        if (classBytes != null) {
+        logger.info("class:{} enhance success.", className);
+//        if (classBytes != null) {
             ExportClassUtil.dumpClassIfNecessary(className, classBytes);
-        } else {
-            //logger.info("ClassWrite create a empty file. className:{}",className);
-        }
-        EnhanceClassManager.getInstance().put(classBeingRedefined, classBytes);
+//        } else {
+//            logger.info("ClassWrite create a empty file. className:{}",className);
+//        }
+        //EnhanceClassManager.getInstance().put(classBeingRedefined, classBytes);
         return classBytes;
     }
 }
