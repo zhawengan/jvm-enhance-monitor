@@ -18,13 +18,11 @@ import com.github.zwg.core.manager.JemMethod;
 import com.github.zwg.core.manager.MatchStrategy;
 import com.github.zwg.core.manager.MethodMatcher;
 import com.github.zwg.core.manager.SearchMatcher;
-import com.github.zwg.core.netty.Message;
-import com.github.zwg.core.netty.MessageTypeEnum;
+import com.github.zwg.core.netty.MessageUtil;
 import com.github.zwg.core.ongl.Express;
 import com.github.zwg.core.ongl.ExpressFactory;
 import com.github.zwg.core.session.Session;
 import com.github.zwg.core.statistic.InvokeCost;
-import com.github.zwg.core.util.JacksonObjectFormat;
 import io.netty.channel.Channel;
 import java.lang.instrument.Instrumentation;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -70,7 +68,6 @@ public class WatchCommandHandler implements CommandHandler {
     private boolean isFinish = false;
     private boolean isException = false;
     private boolean isSuccess = false;
-    private final JacksonObjectFormat objectFormat = new JacksonObjectFormat();
 
     @Override
     public void execute(Session session, Instrumentation inst,
@@ -168,16 +165,15 @@ public class WatchCommandHandler implements CommandHandler {
                         Object result = exp.get(express);
                         logger.info("do watching. result:{}, session:{}", result, session);
                         Channel channel = session.getChannel();
-                        Message response = new Message();
-                        response.setMessageType(MessageTypeEnum.RESPONSE);
-                        response.setBody(objectFormat.toJsonPretty(result));
-                        channel.writeAndFlush(response, channel.voidPromise());
+                        channel.writeAndFlush(
+                                MessageUtil.buildResponse(session.getSessionId(), result),
+                                channel.voidPromise());
                         if (isOverThreshold(timesRef.incrementAndGet())) {
-                            session.getChannel().close();
+                            AdviceListenerManager.unReg(session.getSessionId());
                         }
-                    }else {
+                    } else {
                         logger.info(
-                                "do watching, express is not in condition. express:{},condition:{}",
+                                "do watching, express is not in condition. advice:{},condition:{}",
                                 advice, conditionExpress);
                     }
 

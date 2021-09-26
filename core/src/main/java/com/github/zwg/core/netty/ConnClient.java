@@ -49,6 +49,7 @@ public class ConnClient {
         } catch (Exception e) {
             e.printStackTrace();
             group.shutdownGracefully();
+            System.exit(0);
         }
         return null;
     }

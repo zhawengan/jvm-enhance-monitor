@@ -28,7 +28,7 @@ public class MessageUtil {
             if (data instanceof String) {
                 message.setBody(data.toString());
             } else {
-                message.setBody(objectFormat.toJson(data));
+                message.setBody(objectFormat.toJsonPretty(data));
             }
         }
         return message;
