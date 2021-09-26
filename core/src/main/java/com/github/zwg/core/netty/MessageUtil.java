@@ -46,4 +46,12 @@ public class MessageUtil {
         return wrap(sessionId, MessageTypeEnum.RESPONSE, null, data);
     }
 
+    public static Message buildAllResponse(String sessionId, Object data) {
+        return wrap(sessionId, MessageTypeEnum.RESPONSE_ALL, null, data);
+    }
+
+    public static Message buildPrompt() {
+        return wrap("", MessageTypeEnum.PROMPT, null, Constants.PROMPT);
+    }
+
 }

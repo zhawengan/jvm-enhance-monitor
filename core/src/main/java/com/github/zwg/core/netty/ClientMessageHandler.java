@@ -32,11 +32,19 @@ public class ClientMessageHandler extends SimpleChannelInboundHandler<Message> {
             logger.debug("client receive message:{}", message);
             return;
         }
+        if (message.getMessageType() == MessageTypeEnum.PROMPT) {
+            printPrompt();
+            return;
+        }
         if (message.getMessageType() == MessageTypeEnum.RESPONSE) {
             writer.println(message.getBody());
             writer.flush();
-            printPrompt();
-        } else {
+            return;
+        }
+
+        if (message.getMessageType() == MessageTypeEnum.RESPONSE_ALL) {
+            writer.println(message.getBody());
+            writer.flush();
             printPrompt();
         }
     }

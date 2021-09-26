@@ -12,7 +12,9 @@ public enum MessageTypeEnum {
     PING((byte) 3),
     PONG((byte) 4),
     EMPTY((byte) 5),
-    REGISTER((byte) 6);
+    REGISTER((byte) 6),
+    PROMPT((byte)7),
+    RESPONSE_ALL((byte)8);
 
     private byte type;
 

@@ -55,31 +55,19 @@ public class ServerMessageHandler extends SimpleChannelInboundHandler<Message> {
         CommandHandler commandHandler = CommandFactory.getInstance()
                 .getExecuteCommandHandler(command);
         if (commandHandler == null) {
-            Message response = new Message();
-            response.setMessageType(MessageTypeEnum.RESPONSE);
-            response.setBody("unknown command:" + command.getName());
-            channel.writeAndFlush(response, channel.voidPromise());
+            channel.writeAndFlush(
+                    MessageUtil.buildAllResponse(sessionId, "unknown command:" + command.getName()),
+                    channel.voidPromise());
             return;
         }
         try {
             Session session = DefaultSessionManager.getInstance().get(sessionId);
             commandHandler.execute(session, inst,
-                    result -> {
-                        Message response = new Message();
-                        response.setMessageType(MessageTypeEnum.RESPONSE);
-                        response.setBody(objectFormat.toJsonPretty(result));
-                        channel.writeAndFlush(response, channel.voidPromise());
-                    });
+                    result -> channel.writeAndFlush(MessageUtil.buildAllResponse(sessionId, result), channel.voidPromise()));
         } catch (BadCommandException ex) {
-            channel.writeAndFlush(MessageUtil.buildResponse(sessionId,ex.getMessage()), channel.voidPromise());
+            channel.writeAndFlush(MessageUtil.buildAllResponse(sessionId, ex.getMessage()),
+                    channel.voidPromise());
         }
-        sendEmptyMessage(channel);
-    }
-
-    private void sendEmptyMessage(Channel channel) {
-        Message response = new Message();
-        response.setMessageType(MessageTypeEnum.EMPTY);
-        channel.writeAndFlush(response, channel.voidPromise());
     }
 
 }
