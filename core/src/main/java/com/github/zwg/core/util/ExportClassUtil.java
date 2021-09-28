@@ -59,4 +59,25 @@ public class ExportClassUtil {
 
     }
 
+    public static void dumpAsmIfNecessary(String className, byte[] data) {
+        final File dumpClassFile = new File("./jemDump/" + className + "_Asm.log");
+        final File classPath = new File(dumpClassFile.getParent());
+
+        // 创建类所在的包路径
+        if (!classPath.mkdirs()
+                && !classPath.exists()) {
+            logger.warn("create dump classpath:{} failed.", classPath);
+            return;
+        }
+        // 将类字节码写入文件
+        try {
+            writeByteArrayToFile(dumpClassFile, data);
+            logger.info("dump class file success. className:{},filePath:{}", className,
+                    dumpClassFile.getAbsolutePath());
+        } catch (IOException e) {
+            logger.warn("dump class:{} to file {} failed.", className, dumpClassFile, e);
+        }
+
+    }
+
 }

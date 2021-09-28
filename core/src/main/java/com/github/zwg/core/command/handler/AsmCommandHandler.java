@@ -1,10 +1,12 @@
 package com.github.zwg.core.command.handler;
 
+import static com.github.zwg.core.util.ExportClassUtil.dumpAsmIfNecessary;
 import static java.lang.System.arraycopy;
 
 import com.github.zwg.core.annotation.Arg;
 import com.github.zwg.core.annotation.Cmd;
 import com.github.zwg.core.asm.AsmTraceClassVisitor;
+import com.github.zwg.core.asm.EnhanceClassManager;
 import com.github.zwg.core.command.CommandHandler;
 import com.github.zwg.core.command.ParamConstant;
 import com.github.zwg.core.manager.MatchStrategy;
@@ -21,12 +23,13 @@ import java.lang.instrument.Instrumentation;
 import java.security.ProtectionDomain;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
 import org.objectweb.asm.ClassReader;
+import org.objectweb.asm.FieldVisitor;
 import org.objectweb.asm.MethodVisitor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author zwg
@@ -41,11 +44,16 @@ import org.objectweb.asm.MethodVisitor;
         })
 public class AsmCommandHandler implements CommandHandler {
 
+    private final Logger logger = LoggerFactory.getLogger(AsmCommandHandler.class);
+
     @Arg(name = ParamConstant.CLASS_KEY, description = "find class expression")
     private String classPattern;
 
     @Arg(name = ParamConstant.METHOD_KEY, required = false, defaultValue = "*", description = "find method expression")
     private String methodPattern;
+
+    @Arg(name = ParamConstant.FIELD_INCLUDE_KEY, required = false, defaultValue = "1", description = "asm file include fields")
+    private Integer includeField;
 
     @Arg(name = ParamConstant.REG_KEY, required = false, defaultValue = "WILDCARD", description = "expression matching rules: wildcard, regular, equal")
     private String strategy;
@@ -62,19 +70,32 @@ public class AsmCommandHandler implements CommandHandler {
         //2、查询匹配的类
         Collection<Class<?>> classes = ReflectClassManager.getInstance()
                 .searchClass(classMatcher);
+        logger.info("find asm command classes:{},classPattern:{}", classes, classPattern);
         //3、获取字节码
         List<AsmClassInfo> classInfos = transformClassInfo(classes, inst);
-        Map<String, Object> result = new HashMap<>();
         for (AsmClassInfo classInfo : classInfos) {
             if (classInfo.clazz.isArray()) {
                 continue;
             }
+            logger.info("find asm class:{},bytecode size:{}", classInfo.clazz,
+                    classInfo.byteArray.length);
             InputStream is = new ByteArrayInputStream(classInfo.byteArray);
             StringWriter sw = new StringWriter();
             try {
                 ClassReader cr = new ClassReader(is);
                 AsmTraceClassVisitor traceClassVisitor = new AsmTraceClassVisitor(
                         new PrintWriter(sw, true)) {
+
+                    @Override
+                    public FieldVisitor visitField(int access, String name, String descriptor,
+                            String signature, Object value) {
+                        if (includeField != null && includeField.equals(1)) {
+                            return super.visitField(access, name, descriptor, signature, value);
+                        } else {
+                            return null;
+                        }
+                    }
+
                     @Override
                     public MethodVisitor visitMethod(int access, String name, String descriptor,
                             String signature, String[] exceptions) {
@@ -90,10 +111,10 @@ public class AsmCommandHandler implements CommandHandler {
             } catch (Exception ex) {
                 ex.printStackTrace();
             }
-            result.put(classInfo.clazz.getName(), sw.toString());
+            dumpAsmIfNecessary(classInfo.clazz.getName().replace('.', '/'),
+                    sw.toString().getBytes());
         }
-
-        session.sendCompleteMessage(MessageUtil.buildResponse(result));
+        session.sendMessage(MessageUtil.buildPrompt());
 
     }
 
@@ -105,16 +126,20 @@ public class AsmCommandHandler implements CommandHandler {
         }
         ClassFileTransformer classFileTransformer = (loader, className, classBeingRedefined, protectionDomain, classfileBuffer) -> {
             if (classes.contains(classBeingRedefined)) {
-                classInfos.add(new AsmClassInfo(classBeingRedefined, loader, classfileBuffer,
+                byte[] enhanceBytes = EnhanceClassManager.getInstance().get(classBeingRedefined);
+                if (enhanceBytes == null) {
+                    enhanceBytes = classfileBuffer;
+                }
+                classInfos.add(new AsmClassInfo(classBeingRedefined, loader, enhanceBytes,
                         protectionDomain));
             }
             return null;
         };
         try {
-            inst.addTransformer(classFileTransformer);
+            inst.addTransformer(classFileTransformer, true);
             int size = classes.size();
             Class<?>[] classArray = new Class[size];
-            arraycopy(classes, 0, classArray, 0, size);
+            arraycopy(classes.toArray(), 0, classArray, 0, size);
             inst.retransformClasses(classArray);
         } catch (Exception ex) {
             ex.printStackTrace();

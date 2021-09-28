@@ -26,7 +26,7 @@ public class EnhanceClassManager {
 
     public static EnhanceClassManager getInstance() {
         if (manager == null) {
-            synchronized (EnhanceClassManager.manager) {
+            synchronized (EnhanceClassManager.class) {
                 if (manager == null) {
                     manager = new EnhanceClassManager();
                 }

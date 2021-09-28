@@ -2,7 +2,6 @@ package com.github.zwg.core.asm;
 
 import com.github.zwg.core.manager.JemMethod;
 import com.github.zwg.core.manager.Matcher;
-import com.github.zwg.core.util.ExportClassUtil;
 import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.IllegalClassFormatException;
 import java.security.ProtectionDomain;
@@ -43,25 +42,20 @@ public class EnhanceTransformer implements ClassFileTransformer {
             return null;
         }
         logger.warn("class is enhance target. class:{}", classBeingRedefined);
-//        byte[] byteCodes = EnhanceClassManager.getInstance().get(classBeingRedefined);
-//        if (byteCodes == null) {
-//            logger.info("get cached bytecode null, use classFileBuffer. className:{}", className);
-//            byteCodes = classfileBuffer;
-//        }
+        byte[] byteCodes = EnhanceClassManager.getInstance().get(classBeingRedefined);
+        if (byteCodes == null) {
+            logger.info("get cached bytecode null, use classFileBuffer. className:{}", className);
+            byteCodes = classfileBuffer;
+        }
         logger.info("get cached bytecode not null, use classFileBuffer. className:{}", className);
-        ClassReader cr = new ClassReader(classfileBuffer);
+        ClassReader cr = new ClassReader(byteCodes);
         Matcher<JemMethod> methodMatcher = target.get(classBeingRedefined);
         ClassWriter cw = new ClassWriter(cr, ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS);
         cr.accept(new AdviceClassVisitor(sessionId, isTracing, className, methodMatcher, cw),
                 ClassReader.EXPAND_FRAMES);
         byte[] classBytes = cw.toByteArray();
         logger.info("class:{} enhance success.", className);
-//        if (classBytes != null) {
-        ExportClassUtil.dumpClassIfNecessary(className, classBytes);
-//        } else {
-//            logger.info("ClassWrite create a empty file. className:{}",className);
-//        }
-        //EnhanceClassManager.getInstance().put(classBeingRedefined, classBytes);
+        EnhanceClassManager.getInstance().put(classBeingRedefined, classBytes);
         return classBytes;
     }
 }

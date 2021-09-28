@@ -55,4 +55,6 @@ public interface ParamConstant {
     String FILE_LOCATION = "f";
 
     String EXPRESS_CONDITION = "ed";
+
+    String FIELD_INCLUDE_KEY="fi";
 }
