@@ -61,4 +61,8 @@ public class DefaultSessionManager {
         }
     }
 
+    public void clean(){
+        sessionMap.clear();
+    }
+
 }

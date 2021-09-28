@@ -20,6 +20,7 @@ public interface ParamConstant {
     String COMMAND_TRACE = "trace";
     String COMMAND_WATCH = "watch";
     String COMMAND_EXPORT = "export";
+    String COMMAND_SHUTDOWN = "shutdown";
 
     /**
      * command中获取匹配方式的键

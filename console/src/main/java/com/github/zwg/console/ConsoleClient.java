@@ -46,7 +46,8 @@ public class ConsoleClient {
                         channel.writeAndFlush(
                                 MessageUtil
                                         .wrap(sessionId, MessageTypeEnum.REQUEST, null, command));
-                        if ("quit".equals(command.getName())) {
+                        if ("quit".equals(command.getName())
+                                || "shutdown".equals(command.getName())) {
                             shutdown();
                         }
                     } else {
@@ -82,8 +83,10 @@ public class ConsoleClient {
     }
 
     private void shutdown() throws InterruptedException {
-        Thread.sleep(500);
-        channel.close();
+        Thread.sleep(300);
+        if(channel.isOpen()){
+            channel.close();
+        }
         console.shutdown();
     }
 
