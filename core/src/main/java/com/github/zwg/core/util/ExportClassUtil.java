@@ -22,11 +22,8 @@ public class ExportClassUtil {
         if (cls == null) {
             return null;
         }
-
         String name = cls.getCanonicalName().replaceAll("\\.", "/") + ".class";
-
         InputStream is = ClassLoader.getSystemResourceAsStream(name);
-
         BufferedInputStream bis = new BufferedInputStream(is);
         try {
             int length = is.available();

@@ -37,27 +37,30 @@ public class ConsoleClient {
         ConnClient connClient = new ConnClient();
         channel = connClient
                 .conn(inetSocketAddress.getHostName(), inetSocketAddress.getPort(), out, sessionId);
-        String line;
-        while ((line = console.readLine()) != null) {
-            // If we input the special word then we will mask
-            // the next line.
-            if (line.equalsIgnoreCase("quit") || line.equalsIgnoreCase("exit")) {
-                interrupt();
-                break;
-            }
-            if (!StringUtils.isBlank(line)) {
-                Command command = CommandParse.parse(line);
-                if (command != null) {
-                    channel.writeAndFlush(
-                            MessageUtil.wrap(sessionId, MessageTypeEnum.REQUEST, null, command));
+        try {
+            String line;
+            while ((line = console.readLine()) != null) {
+                if (!StringUtils.isBlank(line)) {
+                    Command command = CommandParse.parse(line);
+                    if (command != null) {
+                        channel.writeAndFlush(
+                                MessageUtil
+                                        .wrap(sessionId, MessageTypeEnum.REQUEST, null, command));
+                        if ("quit".equals(command.getName())) {
+                            shutdown();
+                        }
+                    } else {
+                        out.println("please check if a bad command:" + line);
+                    }
                 } else {
-                    out.println("please check if a bad command:" + line);
+                    out.write(Constants.PROMPT);
+                    out.flush();
                 }
-            } else {
-                out.write(Constants.PROMPT);
-                out.flush();
             }
+        } catch (Exception ex) {
+            System.exit(0);
         }
+
 
     }
 
@@ -76,6 +79,12 @@ public class ConsoleClient {
      */
     private void interrupt() {
         channel.writeAndFlush(MessageUtil.buildInterrupt(sessionId), channel.voidPromise());
+    }
+
+    private void shutdown() throws InterruptedException {
+        Thread.sleep(500);
+        channel.close();
+        console.shutdown();
     }
 
     private void printBanner(PrintWriter writer) {

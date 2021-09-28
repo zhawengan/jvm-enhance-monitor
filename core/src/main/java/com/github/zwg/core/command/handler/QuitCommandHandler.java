@@ -1,14 +1,11 @@
 package com.github.zwg.core.command.handler;
 
-import com.github.zwg.core.advisor.AdviceListenerManager;
 import com.github.zwg.core.annotation.Cmd;
 import com.github.zwg.core.command.CommandHandler;
 import com.github.zwg.core.command.ParamConstant;
 import com.github.zwg.core.netty.MessageUtil;
 import com.github.zwg.core.session.Session;
 import java.lang.instrument.Instrumentation;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * @author zwg
@@ -20,12 +17,8 @@ public class QuitCommandHandler implements CommandHandler {
 
     @Override
     public void execute(Session session, Instrumentation inst) {
-        AdviceListenerManager.unReg(session.getSessionId());
-        Map<String, Object> result = new HashMap<>();
-        result.put("message", "Bye!");
-        //callback.execute(result);
-        session.sendCompleteMessage(MessageUtil.buildResponse(result));
-//        DefaultSessionManager.getInstance().remove(session.getChannel());
-//        session.getChannel().close();
+        session.clean();
+        session.sendDirectMessage(MessageUtil.buildResponse("Bye!"));
+        session.destroy();
     }
 }

@@ -5,6 +5,7 @@ import static com.github.zwg.core.util.ExportClassUtil.loadBytes;
 
 import com.github.zwg.core.annotation.Arg;
 import com.github.zwg.core.annotation.Cmd;
+import com.github.zwg.core.asm.EnhanceClassManager;
 import com.github.zwg.core.command.CommandHandler;
 import com.github.zwg.core.command.ParamConstant;
 import com.github.zwg.core.manager.MatchStrategy;
@@ -44,8 +45,11 @@ public class ExportCommandHandler implements CommandHandler {
         if (classes != null && classes.size() > 0) {
             for (Class<?> clazz : classes) {
                 try {
-                    byte[] bytes = loadBytes(clazz);
-                    dumpClassIfNecessary(clazz.getSimpleName(), bytes);
+                    byte[] bytecode = EnhanceClassManager.getInstance().get(clazz);
+                    if (bytecode == null) {
+                        bytecode = loadBytes(clazz);
+                    }
+                    dumpClassIfNecessary(clazz.getSimpleName(), bytecode);
                 } catch (Exception ex) {
                     logger.warn("export class failed. className:{}", clazz.getName());
                 }

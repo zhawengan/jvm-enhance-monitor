@@ -24,8 +24,6 @@ public class Session {
     //连接通道
     private Channel channel;
 
-    private AtomicBoolean destroy = new AtomicBoolean(false);
-
     private AtomicBoolean interrupt = new AtomicBoolean(false);
 
     private AtomicBoolean cmdCompleted = new AtomicBoolean(false);
@@ -43,10 +41,9 @@ public class Session {
         AdviceListenerManager.unReg(sessionId);
     }
 
-    public void reset(){
+    public void reset() {
         cmdCompleted.set(false);
         interrupt.set(false);
-        destroy.set(false);
         writeQueue.clear();
         AdviceListenerManager.unReg(sessionId);
     }
@@ -56,9 +53,14 @@ public class Session {
         channel.writeAndFlush(MessageUtil.buildPrompt(), channel.voidPromise());
     }
 
+    public void destroy() {
+        clean();
+        DefaultSessionManager.getInstance().remove(sessionId);
+    }
+
     public void sendMessage(Message message) {
         try {
-            if(!cmdCompleted.get()){
+            if (!cmdCompleted.get()) {
                 writeQueue.offer(message, 200, TimeUnit.MILLISECONDS);
             }
         } catch (Exception e) {
@@ -69,6 +71,10 @@ public class Session {
     public void sendCompleteMessage(Message message) {
         sendMessage(message);
         sendMessage(MessageUtil.buildPrompt());
+    }
+
+    public void sendDirectMessage(Message message) {
+        channel.writeAndFlush(message, channel.voidPromise());
     }
 
 }

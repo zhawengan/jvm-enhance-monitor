@@ -78,15 +78,14 @@ public class ServerMessageHandler extends SimpleChannelInboundHandler<Message> {
     }
 
     private void invokeCommandResult(Session session) {
-        Thread worker = new Thread(()->{
+        Thread worker = new Thread(() -> {
             Thread thread = Thread.currentThread();
             BlockingQueue<Message> writeQueue = session.getWriteQueue();
             Channel channel = session.getChannel();
             String sessionId = session.getSessionId();
             try {
                 AtomicBoolean cmdCompleted = session.getCmdCompleted();
-                while (!session.getDestroy().get()
-                        && !thread.isInterrupted()
+                while (!thread.isInterrupted()
                         && !cmdCompleted.get()) {
                     Message message = writeQueue.poll(200, TimeUnit.MILLISECONDS);
                     if (message == null) {
