@@ -12,16 +12,16 @@ public class GroupMatcher<T> implements Matcher<T> {
 
     private List<Matcher<T>> matcherList = new ArrayList<>();
 
-    public void add(Matcher<T> matcher){
-        if(matcher!=null){
+    public void add(Matcher<T> matcher) {
+        if (matcher != null) {
             matcherList.add(matcher);
         }
     }
 
     @Override
     public boolean match(T target) {
-        for (Matcher<T> matcher:matcherList) {
-            if(matcher.match(target)){
+        for (Matcher<T> matcher : matcherList) {
+            if (matcher.match(target)) {
                 return true;
             }
         }

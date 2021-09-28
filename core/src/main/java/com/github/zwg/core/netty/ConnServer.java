@@ -34,6 +34,23 @@ public class ConnServer {
         this.inst = inst;
     }
 
+    public static void main(String[] args) {
+        new ConnServer(null).start(8080);
+    }
+
+    public static Collection<Class<?>> getLoadClasses() {
+        try {
+            ClassLoader classLoader = ConnServer.class.getClassLoader();
+            Field field = ClassLoader.class.getDeclaredField("classes");
+            field.setAccessible(true);
+            Collection<Class<?>> data = (Collection<Class<?>>) field.get(classLoader);
+            return data;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return Collections.emptyList();
+    }
+
     public void start(int port) {
         EventLoopGroup bossGroup = new NioEventLoopGroup();
         EventLoopGroup workerGroup = new NioEventLoopGroup();
@@ -71,23 +88,5 @@ public class ConnServer {
             bossGroup.shutdownGracefully();
             workerGroup.shutdownGracefully();
         }
-    }
-
-    public static void main(String[] args) {
-        new ConnServer(null).start(8080);
-    }
-
-
-    public static Collection<Class<?>> getLoadClasses() {
-        try {
-            ClassLoader classLoader = ConnServer.class.getClassLoader();
-            Field field = ClassLoader.class.getDeclaredField("classes");
-            field.setAccessible(true);
-            Collection<Class<?>> data = (Collection<Class<?>>) field.get(classLoader);
-            return data;
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return Collections.emptyList();
     }
 }

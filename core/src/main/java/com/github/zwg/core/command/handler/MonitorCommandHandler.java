@@ -76,19 +76,15 @@ public class MonitorCommandHandler implements CommandHandler {
     private AdviceListener getAdviceListener(Session session) {
         return new AdviceListener() {
 
-            private Timer timer;
-
             /**
              * 考虑到被监控的方法可能存在多线程并发，针对每个线程，需要有单独的数据
              */
             private final InvokeCost invokeCost = new InvokeCost();
-
             private final AtomicBoolean consumeFlag = new AtomicBoolean(true);
-
             private final BlockingQueue<MonitorStash> stashData = new LinkedBlockingQueue<>();
-
             private final ConcurrentHashMap<String, MonitorData> monitorMap
                     = new ConcurrentHashMap<>();
+            private Timer timer;
 
             @Override
             public void start() {

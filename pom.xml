@@ -42,35 +42,35 @@
             <version>4.11</version>
         </dependency>
         <dependency>
-            <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
+            <groupId>org.slf4j</groupId>
             <version>1.7.5</version>
         </dependency>
         <!--netty的依赖集合，都整合在一个依赖里面了-->
         <dependency>
-            <groupId>io.netty</groupId>
             <artifactId>netty-all</artifactId>
+            <groupId>io.netty</groupId>
             <version>4.1.6.Final</version>
         </dependency>
         <!--这里使用jackson反序列字节码-->
         <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
+            <groupId>com.fasterxml.jackson.core</groupId>
             <version>2.9.7</version>
         </dependency>
         <dependency>
-            <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
-            <version>1.0.13</version>
-        </dependency>
-        <dependency>
             <groupId>ch.qos.logback</groupId>
-            <artifactId>logback-core</artifactId>
             <version>1.0.13</version>
         </dependency>
         <dependency>
-            <groupId>org.projectlombok</groupId>
+            <artifactId>logback-core</artifactId>
+            <groupId>ch.qos.logback</groupId>
+            <version>1.0.13</version>
+        </dependency>
+        <dependency>
             <artifactId>lombok</artifactId>
+            <groupId>org.projectlombok</groupId>
             <version>1.18.12</version>
         </dependency>
     </dependencies>

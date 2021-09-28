@@ -21,26 +21,27 @@ import java.io.PrintWriter;
  */
 public class ConnClient {
 
-    public Channel conn(String host,int port, PrintWriter writer,String sessionId) {
+    public Channel conn(String host, int port, PrintWriter writer, String sessionId) {
         EventLoopGroup group = new NioEventLoopGroup();
         try {
             Bootstrap bootstrap = new Bootstrap();
             bootstrap.group(group)
                     .channel(NioSocketChannel.class)
-                    .option(ChannelOption.TCP_NODELAY,Boolean.TRUE)
+                    .option(ChannelOption.TCP_NODELAY, Boolean.TRUE)
                     .handler(new ChannelInitializer<SocketChannel>() {
                         @Override
                         protected void initChannel(SocketChannel socketChannel) throws Exception {
                             ChannelPipeline pipeline = socketChannel.pipeline();
-                            pipeline.addLast(new IdleStateHandler(30,0,0));
+                            pipeline.addLast(new IdleStateHandler(30, 0, 0));
                             //处理粘包和拆包问题
-                            pipeline.addLast(new LengthFieldBasedFrameDecoder(20*1024,0,4,0,4));
+                            pipeline.addLast(
+                                    new LengthFieldBasedFrameDecoder(20 * 1024, 0, 4, 0, 4));
                             pipeline.addLast(new LengthFieldPrepender(4));
                             //自定义协议编解码
                             pipeline.addLast(new MessageEncoder());
                             pipeline.addLast(new MessageDecoder());
                             //具体消息处理器
-                            pipeline.addLast(new ClientMessageHandler(sessionId,writer));
+                            pipeline.addLast(new ClientMessageHandler(sessionId, writer));
                         }
                     });
             Channel channel = bootstrap.connect(host, port).sync().channel();
@@ -54,9 +55,9 @@ public class ConnClient {
         return null;
     }
 
-    private void register(String sessionId,Channel channel){
+    private void register(String sessionId, Channel channel) {
         Message message = MessageUtil.buildRegister(sessionId, "I'm a jem client");
-        channel.writeAndFlush(message,channel.voidPromise());
+        channel.writeAndFlush(message, channel.voidPromise());
     }
 
 }

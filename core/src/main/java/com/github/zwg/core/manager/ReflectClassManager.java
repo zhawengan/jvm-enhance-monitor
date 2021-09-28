@@ -25,6 +25,17 @@ public class ReflectClassManager {
         loadedClasses = new ArrayList<>();
     }
 
+    public static ReflectClassManager getInstance() {
+        if (instance == null) {
+            synchronized (ReflectClassManager.class) {
+                if (instance == null) {
+                    instance = new ReflectClassManager();
+                }
+            }
+        }
+        return instance;
+    }
+
     //默认通配符匹配
     public Collection<Class<?>> searchClass(Matcher<String> matcher) {
         Collection<Class<?>> matchClasses = new ArrayList<>();
@@ -53,7 +64,6 @@ public class ReflectClassManager {
         return methods;
     }
 
-
     public Set<Method> getClassMethods(Class<?> clazz) {
         Set<Method> methods = new HashSet<>();
         //获取当前类的所有方法
@@ -74,7 +84,6 @@ public class ReflectClassManager {
         return methods;
     }
 
-
     private List<Class<?>> getSupperClasses(Class<?> clazz) {
         List<Class<?>> classes = new ArrayList<>();
         Class<?> targetClass = clazz;
@@ -89,22 +98,10 @@ public class ReflectClassManager {
         return classes;
     }
 
-
     public void initLoadedClass(Collection<Class<?>> classes) {
         if (classes != null) {
             this.loadedClasses.addAll(classes);
         }
-    }
-
-    public static ReflectClassManager getInstance() {
-        if (instance == null) {
-            synchronized (ReflectClassManager.class) {
-                if (instance == null) {
-                    instance = new ReflectClassManager();
-                }
-            }
-        }
-        return instance;
     }
 
 }

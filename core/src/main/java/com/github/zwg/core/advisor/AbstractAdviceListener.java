@@ -9,7 +9,7 @@ import java.util.Stack;
  */
 public abstract class AbstractAdviceListener implements AdviceListener {
 
-    public ThreadLocal<Stack<Advice>> adviceStack =  ThreadLocal.withInitial(Stack::new);
+    public ThreadLocal<Stack<Advice>> adviceStack = ThreadLocal.withInitial(Stack::new);
 
     @Override
     public void beforeMethod(ClassLoader classLoader, String className, String methodName,
@@ -19,7 +19,7 @@ public abstract class AbstractAdviceListener implements AdviceListener {
                     args);
             adviceStack.get()
                     .push(advice);
-            if(advice.isBefore()){
+            if (advice.isBefore()) {
                 processMethodBeforeAdvice(advice);
             }
         } catch (Exception ex) {
@@ -35,7 +35,7 @@ public abstract class AbstractAdviceListener implements AdviceListener {
             Advice advice = adviceStack.get().pop();
             advice.setReturnObj(returnObject);
             adviceStack.get().push(advice);
-            if(advice.isReturn()){
+            if (advice.isReturn()) {
                 processMethodReturningAdvice(advice);
                 processMethodFinishAdvice(advice);
             }
@@ -51,7 +51,7 @@ public abstract class AbstractAdviceListener implements AdviceListener {
             Advice advice = adviceStack.get().pop();
             advice.setThrowable(throwable);
             adviceStack.get().push(advice);
-            if(advice.isThrow()){
+            if (advice.isThrow()) {
                 processMethodThrowingAdvice(advice);
                 processMethodFinishAdvice(advice);
             }
@@ -68,19 +68,19 @@ public abstract class AbstractAdviceListener implements AdviceListener {
 
     public abstract int getAccess();
 
-    public void processMethodBeforeAdvice(Advice advice){
+    public void processMethodBeforeAdvice(Advice advice) {
 
     }
 
-    public void processMethodReturningAdvice(Advice advice){
+    public void processMethodReturningAdvice(Advice advice) {
 
     }
 
-    public void processMethodThrowingAdvice(Advice advice){
+    public void processMethodThrowingAdvice(Advice advice) {
 
     }
 
-    public void processMethodFinishAdvice(Advice advice){
+    public void processMethodFinishAdvice(Advice advice) {
 
     }
 }

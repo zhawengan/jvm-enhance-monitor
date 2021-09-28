@@ -1,6 +1,6 @@
 package com.github.zwg.core.netty;
 
-import com.github.zwg.core.util.JacksonObjectFormat;
+import com.github.zwg.core.util.JacksonUtil;
 import java.util.Map;
 
 /**
@@ -9,8 +9,6 @@ import java.util.Map;
  * @date 2021/9/1
  */
 public class MessageUtil {
-
-    private static final JacksonObjectFormat objectFormat = new JacksonObjectFormat();
 
     public static Message wrap(String sessionId, MessageTypeEnum type, Map<String, String> headers,
             Object data) {
@@ -28,7 +26,7 @@ public class MessageUtil {
             if (data instanceof String) {
                 message.setBody(data.toString());
             } else {
-                message.setBody(objectFormat.toJsonPretty(data));
+                message.setBody(JacksonUtil.toJsonPretty(data));
             }
         }
         return message;

@@ -1,10 +1,13 @@
 package com.github.zwg.core.advisor;
 
+import lombok.Data;
+
 /**
  * @author zwg
  * @version 1.0
  * @date 2021/9/9
  */
+@Data
 public class TracingAdvice {
 
     private final Integer tracingLineNumber;
@@ -19,21 +22,5 @@ public class TracingAdvice {
         this.tracingClassName = tracingClassName;
         this.tracingMethodName = tracingMethodName;
         this.tracingMethodDesc = tracingMethodDesc;
-    }
-
-    public Integer getTracingLineNumber() {
-        return tracingLineNumber;
-    }
-
-    public String getTracingClassName() {
-        return tracingClassName;
-    }
-
-    public String getTracingMethodName() {
-        return tracingMethodName;
-    }
-
-    public String getTracingMethodDesc() {
-        return tracingMethodDesc;
     }
 }

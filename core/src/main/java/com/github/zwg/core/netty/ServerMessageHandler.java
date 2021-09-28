@@ -5,7 +5,7 @@ import com.github.zwg.core.command.CommandFactory;
 import com.github.zwg.core.command.CommandHandler;
 import com.github.zwg.core.session.DefaultSessionManager;
 import com.github.zwg.core.session.Session;
-import com.github.zwg.core.util.JacksonObjectFormat;
+import com.github.zwg.core.util.JacksonUtil;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
@@ -26,7 +26,6 @@ public class ServerMessageHandler extends SimpleChannelInboundHandler<Message> {
 
     private final Logger logger = LoggerFactory.getLogger(ServerMessageHandler.class);
 
-    private final JacksonObjectFormat objectFormat = new JacksonObjectFormat();
     private final Instrumentation inst;
 
     public ServerMessageHandler(Instrumentation inst) {
@@ -53,7 +52,7 @@ public class ServerMessageHandler extends SimpleChannelInboundHandler<Message> {
             return;
         }
         logger.debug("server receive message:{}", message);
-        Command command = objectFormat.fromJson(message.getBody(), Command.class);
+        Command command = JacksonUtil.fromJson(message.getBody(), Command.class);
         CommandHandler commandHandler = CommandFactory.getInstance()
                 .getExecuteCommandHandler(command);
         if (commandHandler == null) {
@@ -84,7 +83,6 @@ public class ServerMessageHandler extends SimpleChannelInboundHandler<Message> {
                     && !thread.isInterrupted()
                     && !cmdCompleted.get()) {
                 Message message = writeQueue.poll(200, TimeUnit.MILLISECONDS);
-                logger.info("find message for session:{},message:{}",sessionId,message);
                 if (message == null) {
                     if (cmdCompleted.get()) {
                         session.clean();
@@ -101,7 +99,7 @@ public class ServerMessageHandler extends SimpleChannelInboundHandler<Message> {
         } catch (Exception ex) {
             logger.info("session:{} write failed,", session.getSessionId(), ex);
         }
-        logger.info("process command result. sessionId:{}",sessionId);
+        logger.info("process command result. sessionId:{}", sessionId);
 
     }
 

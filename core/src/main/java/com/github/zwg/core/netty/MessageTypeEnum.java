@@ -13,17 +13,13 @@ public enum MessageTypeEnum {
     PONG((byte) 4),
     EMPTY((byte) 5),
     REGISTER((byte) 6),
-    PROMPT((byte)7),
-    RESPONSE_ALL((byte)8);
+    PROMPT((byte) 7),
+    RESPONSE_ALL((byte) 8);
 
     private byte type;
 
     MessageTypeEnum(byte type) {
         this.type = type;
-    }
-
-    public byte getType() {
-        return this.type;
     }
 
     public static MessageTypeEnum get(byte type) {
@@ -33,5 +29,9 @@ public enum MessageTypeEnum {
             }
         }
         throw new RuntimeException("unsupported type:" + type);
+    }
+
+    public byte getType() {
+        return this.type;
     }
 }

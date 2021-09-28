@@ -44,7 +44,7 @@ public class ConsoleClient {
                 shutdown();
                 break;
             }
-            if(!StringUtils.isBlank(line)){
+            if (!StringUtils.isBlank(line)) {
                 Command command = CommandParse.parse(line);
                 if (command != null) {
                     channel.writeAndFlush(
@@ -52,12 +52,16 @@ public class ConsoleClient {
                 } else {
                     out.println("please check if a bad command:" + line);
                 }
-            }else {
+            } else {
                 out.write(Constants.PROMPT);
                 out.flush();
             }
         }
 
+    }
+
+    public static void main(String[] args) throws IOException {
+        new ConsoleClient(new InetSocketAddress(args[0], Integer.valueOf(args[1])));
     }
 
     private ConsoleReader initConsoleReader() throws IOException {
@@ -91,10 +95,5 @@ public class ConsoleClient {
             e.printStackTrace();
         }
 
-    }
-
-
-    public static void main(String[] args) throws IOException {
-        new ConsoleClient(new InetSocketAddress(args[0], Integer.valueOf(args[1])));
     }
 }

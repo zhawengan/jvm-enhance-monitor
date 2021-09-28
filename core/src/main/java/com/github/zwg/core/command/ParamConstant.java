@@ -48,11 +48,11 @@ public interface ParamConstant {
      */
     String PERIOD = "p";
 
-    String EXPRESS="e";
+    String EXPRESS = "e";
 
     String WATCH = "w";
 
     String FILE_LOCATION = "f";
 
-    String EXPRESS_CONDITION="ed";
+    String EXPRESS_CONDITION = "ed";
 }

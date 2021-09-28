@@ -1,6 +1,6 @@
 package com.github.zwg.core.netty;
 
-import com.github.zwg.core.util.JacksonObjectFormat;
+import com.github.zwg.core.util.JacksonUtil;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToByteEncoder;
@@ -16,7 +16,6 @@ import org.apache.commons.lang3.StringUtils;
  */
 public class MessageEncoder extends MessageToByteEncoder<Message> {
 
-    private final JacksonObjectFormat objectFormat = new JacksonObjectFormat();
 
     @Override
     protected void encode(ChannelHandlerContext ctx, Message message, ByteBuf out)
@@ -47,7 +46,7 @@ public class MessageEncoder extends MessageToByteEncoder<Message> {
         if (message.getHeaders() == null) {
             message.setHeaders(new HashMap<>());
         }
-        String headMsg = objectFormat.toJson(message.getHeaders());
+        String headMsg = JacksonUtil.toJson(message.getHeaders());
         out.writeShort(headMsg.length());
         out.writeCharSequence(headMsg, StandardCharsets.UTF_8);
         //写入消息体

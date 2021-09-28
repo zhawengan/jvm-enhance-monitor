@@ -1,6 +1,6 @@
 package com.github.zwg.core.netty;
 
-import com.github.zwg.core.util.JacksonObjectFormat;
+import com.github.zwg.core.util.JacksonUtil;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ByteToMessageDecoder;
@@ -15,7 +15,6 @@ import java.util.Map;
  */
 public class MessageDecoder extends ByteToMessageDecoder {
 
-    private final JacksonObjectFormat objectFormat = new JacksonObjectFormat();
 
     @Override
     protected void decode(ChannelHandlerContext ctx, ByteBuf byteBuf, List<Object> out)
@@ -31,7 +30,7 @@ public class MessageDecoder extends ByteToMessageDecoder {
         message.setMessageType(MessageTypeEnum.get(byteBuf.readByte()));
         CharSequence headers = byteBuf
                 .readCharSequence(byteBuf.readShort(), StandardCharsets.UTF_8);
-        Map<String, String> headerData = objectFormat.fromJson((String) headers, Map.class);
+        Map<String, String> headerData = JacksonUtil.fromJson((String) headers, Map.class);
         message.getHeaders().putAll(headerData);
         int bodyLength = byteBuf.readInt();
         if (bodyLength > 0) {

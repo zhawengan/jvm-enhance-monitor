@@ -16,6 +16,16 @@ public class JemLauncher {
         attachAgent(configuration);
     }
 
+    public static void main(String[] args) {
+        try {
+            new JemLauncher(args);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            System.out.println("start jem failed.");
+            System.exit(-1);
+        }
+    }
+
     private void attachAgent(Configuration conf) throws Exception {
         ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
         Class<?> vmdClass = classLoader.loadClass("com.sun.tools.attach.VirtualMachineDescriptor");
@@ -70,17 +80,6 @@ public class JemLauncher {
         config.setJemCore((String) os.valueOf("core"));
 
         return config;
-    }
-
-
-    public static void main(String[] args) {
-        try {
-            new JemLauncher(args);
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            System.out.println("start jem failed.");
-            System.exit(-1);
-        }
     }
 
 }

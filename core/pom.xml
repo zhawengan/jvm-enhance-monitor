@@ -18,29 +18,29 @@
                 <groupId>org.apache.maven.plugins</groupId>
             </plugin>
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-assembly-plugin</artifactId>
-                <version>3.1.0</version>
                 <configuration>
-                    <descriptorRefs>
-                        <descriptorRef>jar-with-dependencies</descriptorRef>
-                    </descriptorRefs>
+                    <appendAssemblyId>false</appendAssemblyId>
                     <archive>
                         <manifest>
                             <mainClass>com.github.zwg.core.JemLauncher</mainClass>
                         </manifest>
                     </archive>
-                    <appendAssemblyId>false</appendAssemblyId>
+                    <descriptorRefs>
+                        <descriptorRef>jar-with-dependencies</descriptorRef>
+                    </descriptorRefs>
                 </configuration>
                 <executions>
                     <execution>
-                        <id>make-assembly</id>
-                        <phase>package</phase>
                         <goals>
                             <goal>single</goal>
                         </goals>
+                        <id>make-assembly</id>
+                        <phase>package</phase>
                     </execution>
                 </executions>
+                <groupId>org.apache.maven.plugins</groupId>
+                <version>3.1.0</version>
             </plugin>
         </plugins>
     </build>
@@ -53,23 +53,23 @@
         </dependency>
 
         <dependency>
-            <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
+            <groupId>org.slf4j</groupId>
             <version>1.7.5</version>
         </dependency>
         <dependency>
-            <groupId>io.netty</groupId>
             <artifactId>netty-all</artifactId>
+            <groupId>io.netty</groupId>
             <version>4.1.27.Final</version>
         </dependency>
         <dependency>
-            <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
+            <groupId>org.apache.commons</groupId>
             <version>3.4</version>
         </dependency>
         <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
+            <groupId>com.fasterxml.jackson.core</groupId>
             <version>2.11.3</version>
         </dependency>
 
@@ -100,54 +100,57 @@
         </dependency>
 
         <dependency>
-            <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
-            <version>1.0.13</version>
-        </dependency>
-        <dependency>
             <groupId>ch.qos.logback</groupId>
-            <artifactId>logback-core</artifactId>
             <version>1.0.13</version>
         </dependency>
         <dependency>
-            <groupId>ognl</groupId>
+            <artifactId>logback-core</artifactId>
+            <groupId>ch.qos.logback</groupId>
+            <version>1.0.13</version>
+        </dependency>
+        <dependency>
             <artifactId>ognl</artifactId>
+            <groupId>ognl</groupId>
             <version>3.0.8</version>
         </dependency>
         <dependency>
-            <groupId>net.sf.jopt-simple</groupId>
             <artifactId>jopt-simple</artifactId>
+            <groupId>net.sf.jopt-simple</groupId>
             <version>4.3</version>
         </dependency>
         <dependency>
-            <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
+            <groupId>commons-io</groupId>
             <version>2.4</version>
         </dependency>
         <dependency>
-            <groupId>cn.hutool</groupId>
             <artifactId>hutool-all</artifactId>
+            <groupId>cn.hutool</groupId>
             <version>4.5.15</version>
         </dependency>
         <dependency>
-            <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
+            <groupId>org.projectlombok</groupId>
             <version>1.18.12</version>
         </dependency>
         <dependency>
-            <groupId> org.assertj</groupId>
             <artifactId>assertj-core</artifactId>
-            <version>3.9.0</version>
+            <groupId>org.assertj</groupId>
             <scope>test</scope>
+            <version>3.9.0</version>
         </dependency>
         <dependency>
-            <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
-            <version>2.18.3</version>
+            <groupId>org.mockito</groupId>
             <scope>test</scope>
+            <version>2.18.3</version>
         </dependency>
 
     </dependencies>
+
+    <groupId>com.github.zwg</groupId>
+    <modelVersion>4.0.0</modelVersion>
 
     <properties>
         <asm.version>9.0</asm.version>
@@ -156,9 +159,6 @@
         <maven.compiler.target>${java.version}</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
-    <groupId>com.github.zwg</groupId>
-
-    <modelVersion>4.0.0</modelVersion>
 
     <version>1.0-SNAPSHOT</version>
 </project>

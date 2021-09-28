@@ -37,7 +37,7 @@ public class Session {
         this.channel = channel;
     }
 
-    public void clean(){
+    public void clean() {
         cmdCompleted.set(true);
         writeQueue.clear();
         AdviceListenerManager.unReg(sessionId);
@@ -51,7 +51,7 @@ public class Session {
         }
     }
 
-    public void sendCompleteMessage(Message message){
+    public void sendCompleteMessage(Message message) {
         sendMessage(message);
         sendMessage(MessageUtil.buildPrompt());
     }

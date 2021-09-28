@@ -14,8 +14,8 @@ import org.slf4j.LoggerFactory;
  */
 public class AgentListener {
 
-    private final Logger logger = LoggerFactory.getLogger(AgentListener.class);
     private static AgentListener agentListener;
+    private final Logger logger = LoggerFactory.getLogger(AgentListener.class);
     private final Instrumentation inst;
 
     private final Boolean isStarted = false;
@@ -25,6 +25,17 @@ public class AgentListener {
     private AgentListener(String args, Instrumentation inst) {
         configuration = new Configuration(args);
         this.inst = inst;
+    }
+
+    public static AgentListener getInstance(String args, Instrumentation inst) {
+        if (agentListener == null) {
+            synchronized (AgentListener.class) {
+                if (agentListener == null) {
+                    agentListener = new AgentListener(args, inst);
+                }
+            }
+        }
+        return agentListener;
     }
 
     public Boolean isStarted() {
@@ -40,18 +51,6 @@ public class AgentListener {
             logger.info("agent listener started.");
         }
         return isStarted;
-    }
-
-
-    public static AgentListener getInstance(String args, Instrumentation inst) {
-        if (agentListener == null) {
-            synchronized (AgentListener.class) {
-                if (agentListener == null) {
-                    agentListener = new AgentListener(args, inst);
-                }
-            }
-        }
-        return agentListener;
     }
 
 }

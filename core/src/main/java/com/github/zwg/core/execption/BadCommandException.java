@@ -7,7 +7,7 @@ package com.github.zwg.core.execption;
  */
 public class BadCommandException extends RuntimeException {
 
-    public BadCommandException(String message){
+    public BadCommandException(String message) {
         super(message);
     }
 }

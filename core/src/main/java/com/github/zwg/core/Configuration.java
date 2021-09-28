@@ -1,5 +1,6 @@
 package com.github.zwg.core;
 
+import lombok.Data;
 import org.apache.commons.lang3.StringUtils;
 
 /**
@@ -7,6 +8,7 @@ import org.apache.commons.lang3.StringUtils;
  * @version 1.0
  * @date 2021/9/16
  */
+@Data
 public class Configuration {
 
     private String targetIp;
@@ -24,8 +26,8 @@ public class Configuration {
             String[] params = args.split("@");
             if (params.length == 5) {
                 targetIp = params[0];
-                targetPort = Integer.valueOf(params[1]);
-                javaPid = Integer.valueOf(params[2]);
+                targetPort = Integer.parseInt(params[1]);
+                javaPid = Integer.parseInt(params[2]);
                 jemCore = params[3];
                 jemAgent = params[4];
             }
@@ -39,45 +41,5 @@ public class Configuration {
                 javaPid + "@" +
                 jemCore + "@" +
                 jemAgent;
-    }
-
-    public String getTargetIp() {
-        return targetIp;
-    }
-
-    public void setTargetIp(String targetIp) {
-        this.targetIp = targetIp;
-    }
-
-    public int getTargetPort() {
-        return targetPort;
-    }
-
-    public void setTargetPort(int targetPort) {
-        this.targetPort = targetPort;
-    }
-
-    public int getJavaPid() {
-        return javaPid;
-    }
-
-    public void setJavaPid(int javaPid) {
-        this.javaPid = javaPid;
-    }
-
-    public String getJemCore() {
-        return jemCore;
-    }
-
-    public void setJemCore(String jemCore) {
-        this.jemCore = jemCore;
-    }
-
-    public String getJemAgent() {
-        return jemAgent;
-    }
-
-    public void setJemAgent(String jemAgent) {
-        this.jemAgent = jemAgent;
     }
 }

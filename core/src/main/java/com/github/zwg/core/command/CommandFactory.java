@@ -20,10 +20,9 @@ import org.slf4j.LoggerFactory;
  */
 public class CommandFactory {
 
-    private static CommandFactory instance;
-
     private static final Logger logger = LoggerFactory.getLogger(CommandFactory.class);
     private static final Map<String, Class<?>> commandHandlers = new HashMap<>();
+    private static CommandFactory instance;
 
     private CommandFactory() {
         Set<Class<?>> classes = ClassLoadUtil
@@ -77,7 +76,7 @@ public class CommandFactory {
                 }
                 setValue(field, argVal, instance);
             }
-            logger.info("find CommandHandler:{} for Command:{}",clazz.getName(),command);
+            logger.info("find CommandHandler:{} for Command:{}", clazz.getName(), command);
             return instance;
         } catch (CommandParamException ex) {
             throw ex;

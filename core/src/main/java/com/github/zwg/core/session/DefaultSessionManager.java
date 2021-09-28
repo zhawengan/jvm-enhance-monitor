@@ -13,13 +13,24 @@ import org.slf4j.LoggerFactory;
  */
 public class DefaultSessionManager {
 
-    private final Logger logger = LoggerFactory.getLogger(DefaultSessionManager.class);
     private static DefaultSessionManager instance;
+    private final Logger logger = LoggerFactory.getLogger(DefaultSessionManager.class);
     private final Map<String, Session> sessionMap = new ConcurrentHashMap<>();
     private final Map<Channel, Session> channelMap = new ConcurrentHashMap<>();
 
-    private DefaultSessionManager(){
+    private DefaultSessionManager() {
 
+    }
+
+    public static DefaultSessionManager getInstance() {
+        if (instance == null) {
+            synchronized (DefaultSessionManager.class) {
+                if (instance == null) {
+                    instance = new DefaultSessionManager();
+                }
+            }
+        }
+        return instance;
     }
 
     public Session create(String sessionId, Channel channel) {
@@ -50,17 +61,6 @@ public class DefaultSessionManager {
         if (session != null) {
             sessionMap.remove(session.getSessionId());
         }
-    }
-
-    public static DefaultSessionManager getInstance(){
-        if(instance==null){
-            synchronized (DefaultSessionManager.class){
-                if(instance==null){
-                    instance = new DefaultSessionManager();
-                }
-            }
-        }
-        return instance;
     }
 
 }

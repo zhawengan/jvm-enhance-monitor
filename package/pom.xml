@@ -1,39 +1,43 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns="http://maven.apache.org/POM/4.0.0"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <artifactId>package</artifactId>
 
-  <groupId>com.github.zwg</groupId>
-  <artifactId>package</artifactId>
-  <version>1.0-SNAPSHOT</version>
+    <build>
+        <plugins>
+            <plugin>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <!-- 执行打包操作时执行的任务 -->
+                        <configuration>
+                            <tasks>
+                                <copy file="../agent/target/enhance-agent-1.0-SNAPSHOT.jar"
+                                    overwrite="true" todir="../target"/>
+                                <copy file="../console/target/enhance-console-1.0-SNAPSHOT.jar"
+                                    overwrite="true" todir="../target"/>
+                                <copy file="../core/target/enhance-core-1.0-SNAPSHOT.jar"
+                                    overwrite="true" todir="../target"/>
+                                <mkdir dir="../target"/>
+                            </tasks>
+                        </configuration>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <phase>package</phase>
+                    </execution>
+                </executions>
+                <groupId>org.apache.maven.plugins</groupId>
+                <version>1.8</version>
+            </plugin>
+        </plugins>
+    </build>
+    <groupId>com.github.zwg</groupId>
+    <modelVersion>4.0.0</modelVersion>
 
-  <name>package</name>
+    <name>package</name>
 
-  <build>
-    <plugins>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-antrun-plugin</artifactId>
-        <version>1.8</version>
-        <executions>
-          <execution>
-            <!-- 执行打包操作时执行的任务 -->
-            <phase>package</phase>
-            <goals>
-              <goal>run</goal>
-            </goals>
-            <configuration>
-              <tasks>
-                <mkdir dir="../target"/>
-                <copy file="../agent/target/enhance-agent-1.0-SNAPSHOT.jar" todir="../target" overwrite="true" />
-                <copy file="../console/target/enhance-console-1.0-SNAPSHOT.jar" todir="../target" overwrite="true" />
-                <copy file="../core/target/enhance-core-1.0-SNAPSHOT.jar" todir="../target" overwrite="true" />
-              </tasks>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-    </plugins>
-  </build>
+    <version>1.0-SNAPSHOT</version>
 </project>

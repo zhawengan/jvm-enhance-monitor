@@ -5,9 +5,9 @@ package com.github.zwg.core.execption;
  * @version 1.0
  * @date 2021/9/8
  */
-public class CommandParamException extends RuntimeException{
+public class CommandParamException extends RuntimeException {
 
-    public CommandParamException(String message){
+    public CommandParamException(String message) {
         super(message);
     }
 }

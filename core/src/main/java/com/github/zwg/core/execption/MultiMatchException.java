@@ -5,6 +5,6 @@ package com.github.zwg.core.execption;
  * @version 1.0
  * @date 2021/9/13
  */
-public class MultiMatchException extends RuntimeException{
+public class MultiMatchException extends RuntimeException {
 
 }
