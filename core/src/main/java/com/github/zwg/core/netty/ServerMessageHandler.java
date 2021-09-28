@@ -47,6 +47,12 @@ public class ServerMessageHandler extends SimpleChannelInboundHandler<Message> {
             logger.info("register success. sessionId:{},message:{}", sessionId, message.getBody());
             return;
         }
+        Session session = DefaultSessionManager.getInstance().get(sessionId);
+        if (message.getMessageType() == MessageTypeEnum.INTERRUPT) {
+            session.interrupt();
+            logger.info("register success. sessionId:{},message:{}", sessionId, message.getBody());
+            return;
+        }
         if (StringUtils.isBlank(message.getBody())) {
             logger.debug("receive empty message. {}", message);
             return;
@@ -62,7 +68,7 @@ public class ServerMessageHandler extends SimpleChannelInboundHandler<Message> {
             return;
         }
         try {
-            Session session = DefaultSessionManager.getInstance().get(sessionId);
+            session.reset();
             commandHandler.execute(session, inst);
             invokeCommandResult(session);
         } catch (Exception ex) {
@@ -72,35 +78,36 @@ public class ServerMessageHandler extends SimpleChannelInboundHandler<Message> {
     }
 
     private void invokeCommandResult(Session session) {
-        Thread thread = Thread.currentThread();
-        BlockingQueue<Message> writeQueue = session.getWriteQueue();
-        Channel channel = session.getChannel();
-        String sessionId = session.getSessionId();
-        try {
-            AtomicBoolean cmdCompleted = session.getCmdCompleted();
-            cmdCompleted.set(false);
-            while (!session.getDestroy().get()
-                    && !thread.isInterrupted()
-                    && !cmdCompleted.get()) {
-                Message message = writeQueue.poll(200, TimeUnit.MILLISECONDS);
-                if (message == null) {
-                    if (cmdCompleted.get()) {
-                        session.clean();
-                        break;
-                    }
-                } else {
-                    message.setSessionId(sessionId);
-                    channel.writeAndFlush(message, channel.voidPromise());
-                    if (MessageTypeEnum.PROMPT.equals(message.getMessageType())) {
-                        session.clean();
+        Thread worker = new Thread(()->{
+            Thread thread = Thread.currentThread();
+            BlockingQueue<Message> writeQueue = session.getWriteQueue();
+            Channel channel = session.getChannel();
+            String sessionId = session.getSessionId();
+            try {
+                AtomicBoolean cmdCompleted = session.getCmdCompleted();
+                while (!session.getDestroy().get()
+                        && !thread.isInterrupted()
+                        && !cmdCompleted.get()) {
+                    Message message = writeQueue.poll(200, TimeUnit.MILLISECONDS);
+                    if (message == null) {
+                        if (cmdCompleted.get()) {
+                            session.clean();
+                            break;
+                        }
+                    } else {
+                        message.setSessionId(sessionId);
+                        channel.writeAndFlush(message, channel.voidPromise());
+                        if (MessageTypeEnum.PROMPT.equals(message.getMessageType())) {
+                            session.clean();
+                        }
                     }
                 }
+            } catch (Exception ex) {
+                logger.info("session:{} write failed,", session.getSessionId(), ex);
             }
-        } catch (Exception ex) {
-            logger.info("session:{} write failed,", session.getSessionId(), ex);
-        }
-        logger.info("process command result. sessionId:{}", sessionId);
-
+            logger.info("process command result. sessionId:{}", sessionId);
+        });
+        worker.start();
     }
 
 

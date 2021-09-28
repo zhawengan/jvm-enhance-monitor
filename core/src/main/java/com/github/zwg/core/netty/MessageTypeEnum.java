@@ -14,7 +14,8 @@ public enum MessageTypeEnum {
     EMPTY((byte) 5),
     REGISTER((byte) 6),
     PROMPT((byte) 7),
-    RESPONSE_ALL((byte) 8);
+    RESPONSE_ALL((byte) 8),
+    INTERRUPT((byte) 9),;
 
     private byte type;
 

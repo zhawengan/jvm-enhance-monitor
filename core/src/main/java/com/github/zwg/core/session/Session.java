@@ -43,9 +43,24 @@ public class Session {
         AdviceListenerManager.unReg(sessionId);
     }
 
+    public void reset(){
+        cmdCompleted.set(false);
+        interrupt.set(false);
+        destroy.set(false);
+        writeQueue.clear();
+        AdviceListenerManager.unReg(sessionId);
+    }
+
+    public void interrupt() {
+        clean();
+        channel.writeAndFlush(MessageUtil.buildPrompt(), channel.voidPromise());
+    }
+
     public void sendMessage(Message message) {
         try {
-            writeQueue.offer(message, 200, TimeUnit.MILLISECONDS);
+            if(!cmdCompleted.get()){
+                writeQueue.offer(message, 200, TimeUnit.MILLISECONDS);
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }

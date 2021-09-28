@@ -28,8 +28,9 @@ public class ConsoleClient {
     private final ConsoleReader console;
     private final Channel channel;
 
+    private final String sessionId = UUID.randomUUID().toString();
+
     public ConsoleClient(InetSocketAddress inetSocketAddress) throws IOException {
-        String sessionId = UUID.randomUUID().toString();
         this.console = initConsoleReader();
         PrintWriter out = new PrintWriter(console.getOutput());
         printBanner(out);
@@ -41,7 +42,7 @@ public class ConsoleClient {
             // If we input the special word then we will mask
             // the next line.
             if (line.equalsIgnoreCase("quit") || line.equalsIgnoreCase("exit")) {
-                shutdown();
+                interrupt();
                 break;
             }
             if (!StringUtils.isBlank(line)) {
@@ -66,17 +67,15 @@ public class ConsoleClient {
 
     private ConsoleReader initConsoleReader() throws IOException {
         ConsoleReader console = new ConsoleReader();
-        //console.setPrompt(Constants.prompt);
-        console.getKeys().bind("" + CTRL_D, (ActionListener) e -> shutdown());
+        console.getKeys().bind("" + CTRL_D, (ActionListener) e -> interrupt());
         return console;
     }
 
     /**
-     * 关闭Console
+     * 中断命令
      */
-    private void shutdown() {
-        channel.close();
-        console.shutdown();
+    private void interrupt() {
+        channel.writeAndFlush(MessageUtil.buildInterrupt(sessionId), channel.voidPromise());
     }
 
     private void printBanner(PrintWriter writer) {

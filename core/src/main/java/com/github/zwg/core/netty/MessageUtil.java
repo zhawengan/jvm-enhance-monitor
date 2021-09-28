@@ -52,4 +52,8 @@ public class MessageUtil {
         return wrap("", MessageTypeEnum.PROMPT, null, Constants.PROMPT);
     }
 
+    public static Message buildInterrupt(String sessionId){
+        return wrap(sessionId, MessageTypeEnum.INTERRUPT, null, Constants.PROMPT);
+    }
+
 }
