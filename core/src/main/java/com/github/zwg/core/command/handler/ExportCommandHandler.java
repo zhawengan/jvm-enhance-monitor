@@ -6,11 +6,11 @@ import static com.github.zwg.core.util.ExportClassUtil.loadBytes;
 import com.github.zwg.core.annotation.Arg;
 import com.github.zwg.core.annotation.Cmd;
 import com.github.zwg.core.command.CommandHandler;
-import com.github.zwg.core.command.MonitorCallback;
 import com.github.zwg.core.command.ParamConstant;
 import com.github.zwg.core.manager.MatchStrategy;
 import com.github.zwg.core.manager.ReflectClassManager;
 import com.github.zwg.core.manager.SearchMatcher;
+import com.github.zwg.core.netty.MessageUtil;
 import com.github.zwg.core.session.Session;
 import java.lang.instrument.Instrumentation;
 import java.util.Collection;
@@ -35,8 +35,7 @@ public class ExportCommandHandler implements CommandHandler {
 
 
     @Override
-    public void execute(Session session, Instrumentation inst,
-            MonitorCallback callback) {
+    public void execute(Session session, Instrumentation inst) {
         SearchMatcher searchMatcher = new SearchMatcher(MatchStrategy.valueOf(strategy),
                 classPattern);
         //1、查询匹配的类
@@ -52,6 +51,7 @@ public class ExportCommandHandler implements CommandHandler {
                 }
             }
         }
+        session.sendMessage(MessageUtil.buildPrompt());
     }
 
 }

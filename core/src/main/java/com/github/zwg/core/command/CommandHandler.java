@@ -11,6 +11,6 @@ import java.lang.instrument.Instrumentation;
 public interface CommandHandler {
 
 
-    void execute(Session session, Instrumentation inst,MonitorCallback callback);
+    void execute(Session session, Instrumentation inst);
 
 }

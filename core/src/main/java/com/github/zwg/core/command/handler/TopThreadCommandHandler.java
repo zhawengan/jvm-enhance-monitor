@@ -3,8 +3,8 @@ package com.github.zwg.core.command.handler;
 import com.github.zwg.core.annotation.Arg;
 import com.github.zwg.core.annotation.Cmd;
 import com.github.zwg.core.command.CommandHandler;
-import com.github.zwg.core.command.MonitorCallback;
 import com.github.zwg.core.command.ParamConstant;
+import com.github.zwg.core.netty.MessageUtil;
 import com.github.zwg.core.session.Session;
 import java.lang.instrument.Instrumentation;
 import java.lang.management.ManagementFactory;
@@ -37,8 +37,7 @@ public class TopThreadCommandHandler implements CommandHandler {
     private Integer threadNum;
 
     @Override
-    public void execute(Session session, Instrumentation inst,
-            MonitorCallback callback) {
+    public void execute(Session session, Instrumentation inst) {
         long totalCpuTime = threadMXBean.getCurrentThreadCpuTime();
         List<JemThreadInfo> threadInfos = new ArrayList<>();
         ThreadInfo[] threadInfoList = threadMXBean
@@ -56,7 +55,8 @@ public class TopThreadCommandHandler implements CommandHandler {
         Integer num = Math.min(threadNum, threadInfos.size());
         Collections.sort(threadInfos);
         threadInfos = threadInfos.subList(0, num);
-        callback.execute(getThreadInfoData(threadInfos, totalCpuTime));
+        session.sendCompleteMessage(
+                MessageUtil.buildResponse(getThreadInfoData(threadInfos, totalCpuTime)));
 
 
     }

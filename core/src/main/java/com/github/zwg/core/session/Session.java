@@ -1,13 +1,22 @@
 package com.github.zwg.core.session;
 
 
+import com.github.zwg.core.advisor.AdviceListenerManager;
+import com.github.zwg.core.netty.Message;
+import com.github.zwg.core.netty.MessageUtil;
 import io.netty.channel.Channel;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import lombok.Data;
 
 /**
  * @author zwg
  * @version 1.0
  * @date 2021/8/31
  */
+@Data
 public class Session {
 
     //用户sessionId
@@ -15,24 +24,36 @@ public class Session {
     //连接通道
     private Channel channel;
 
+    private AtomicBoolean destroy = new AtomicBoolean(false);
+
+    private AtomicBoolean interrupt = new AtomicBoolean(false);
+
+    private AtomicBoolean cmdCompleted = new AtomicBoolean(false);
+
+    private BlockingQueue<Message> writeQueue = new LinkedBlockingQueue<>(4096);
+
     public Session(String sessionId, Channel channel) {
         this.sessionId = sessionId;
         this.channel = channel;
     }
 
-    public String getSessionId() {
-        return sessionId;
+    public void clean(){
+        cmdCompleted.set(true);
+        writeQueue.clear();
+        AdviceListenerManager.unReg(sessionId);
     }
 
-    public void setSessionId(String sessionId) {
-        this.sessionId = sessionId;
+    public void sendMessage(Message message) {
+        try {
+            writeQueue.offer(message, 200, TimeUnit.MILLISECONDS);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
-    public Channel getChannel() {
-        return channel;
+    public void sendCompleteMessage(Message message){
+        sendMessage(message);
+        sendMessage(MessageUtil.buildPrompt());
     }
 
-    public void setChannel(Channel channel) {
-        this.channel = channel;
-    }
 }

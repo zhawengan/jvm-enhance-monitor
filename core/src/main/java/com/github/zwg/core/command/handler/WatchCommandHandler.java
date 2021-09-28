@@ -12,7 +12,6 @@ import com.github.zwg.core.asm.EnhancePoint;
 import com.github.zwg.core.asm.Enhancer;
 import com.github.zwg.core.command.AccessConstant;
 import com.github.zwg.core.command.CommandHandler;
-import com.github.zwg.core.command.MonitorCallback;
 import com.github.zwg.core.command.ParamConstant;
 import com.github.zwg.core.manager.JemMethod;
 import com.github.zwg.core.manager.MatchStrategy;
@@ -23,7 +22,6 @@ import com.github.zwg.core.ongl.Express;
 import com.github.zwg.core.ongl.ExpressFactory;
 import com.github.zwg.core.session.Session;
 import com.github.zwg.core.statistic.InvokeCost;
-import io.netty.channel.Channel;
 import java.lang.instrument.Instrumentation;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.commons.lang3.StringUtils;
@@ -70,8 +68,7 @@ public class WatchCommandHandler implements CommandHandler {
     private boolean isSuccess = false;
 
     @Override
-    public void execute(Session session, Instrumentation inst,
-            MonitorCallback callback) {
+    public void execute(Session session, Instrumentation inst) {
         watchPointInit();
         Enhancer.enhance(inst, session.getSessionId(), false, getPoint());
         AdviceListener adviceListener = getAdviceListener(session);
@@ -164,12 +161,10 @@ public class WatchCommandHandler implements CommandHandler {
                     if (isInCondition(exp)) {
                         Object result = exp.get(express);
                         logger.info("do watching. result:{}, session:{}", result, session);
-                        Channel channel = session.getChannel();
-                        channel.writeAndFlush(
-                                MessageUtil.buildResponse(session.getSessionId(), result),
-                                channel.voidPromise());
                         if (isOverThreshold(timesRef.incrementAndGet())) {
-                            AdviceListenerManager.unReg(session.getSessionId());
+                            session.sendCompleteMessage(MessageUtil.buildResponse(result));
+                        } else {
+                            session.sendMessage(MessageUtil.buildResponse(result));
                         }
                     } else {
                         logger.info(

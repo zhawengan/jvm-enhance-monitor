@@ -25,6 +25,7 @@ import org.slf4j.LoggerFactory;
 public class Enhancer {
 
     private static final Logger logger = LoggerFactory.getLogger(Enhancer.class);
+
     public static void enhance(Instrumentation inst, String sessionId, boolean isTracing,
             EnhancePoint point) {
         Map<Class<?>, Matcher<JemMethod>> enhanceMap = toEnhanceMap(point);

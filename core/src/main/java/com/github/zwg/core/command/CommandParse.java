@@ -1,9 +1,6 @@
 package com.github.zwg.core.command;
 
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
-import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,22 +17,25 @@ public class CommandParse {
     public static Command parse(String commandLine) {
         if (!StringUtils.isBlank(commandLine)) {
             try {
-                String[] args = commandLine.split("-");
                 Command command = new Command();
-                if (StringUtils.isBlank(args[0])) {
-                    throw new RuntimeException("parse command name error.");
+                int paramIndex = commandLine.indexOf("-");
+                if (paramIndex < 0) {
+                    command.setName(getCommandString(commandLine));
+                    return command;
+                } else {
+                    command.setName(getCommandString(commandLine.substring(0, paramIndex)));
+                    command.setOptions(new HashMap<>());
                 }
-                command.setName(StringUtils.trim(args[0]));
-                command.setOptions(new HashMap<>());
+                String[] args = commandLine.split("-");
                 for (int i = 1; i < args.length; i++) {
-                    List<String> params = Arrays.asList(args[i].split(" ")).stream()
-                            .filter(o -> !StringUtils.isBlank(o)).collect(
-                                    Collectors.toList());
-                    if (params.size() != 2) {
+                    int keyIndex = args[i].indexOf(" ");
+                    if (keyIndex < 0) {
                         throw new RuntimeException("parse param error. " + args[i]);
                     }
+                    String key = args[i].substring(0, keyIndex);
+                    String val = args[i].substring(keyIndex);
                     command.getOptions()
-                            .put(StringUtils.trim(params.get(0)), StringUtils.trim(params.get(1)));
+                            .put(getCommandString(key), getCommandString(val));
                 }
                 return command;
             } catch (Exception ex) {
@@ -43,6 +43,13 @@ public class CommandParse {
             }
         }
         return null;
+    }
+
+    private static String getCommandString(String input) {
+        if (StringUtils.isBlank(input)) {
+            throw new RuntimeException("parse command name error.");
+        }
+        return StringUtils.trim(input);
     }
 
 }

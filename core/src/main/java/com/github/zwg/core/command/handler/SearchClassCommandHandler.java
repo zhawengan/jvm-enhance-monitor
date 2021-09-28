@@ -5,11 +5,11 @@ import static org.apache.commons.lang3.StringUtils.EMPTY;
 import com.github.zwg.core.annotation.Arg;
 import com.github.zwg.core.annotation.Cmd;
 import com.github.zwg.core.command.CommandHandler;
-import com.github.zwg.core.command.MonitorCallback;
 import com.github.zwg.core.command.ParamConstant;
 import com.github.zwg.core.manager.MatchStrategy;
 import com.github.zwg.core.manager.ReflectClassManager;
 import com.github.zwg.core.manager.SearchMatcher;
+import com.github.zwg.core.netty.MessageUtil;
 import com.github.zwg.core.session.Session;
 import com.github.zwg.core.util.ClassUtil;
 import java.lang.annotation.Annotation;
@@ -37,14 +37,13 @@ public class SearchClassCommandHandler implements CommandHandler {
 
 
     @Override
-    public void execute(Session session, Instrumentation inst,
-            MonitorCallback callback) {
+    public void execute(Session session, Instrumentation inst) {
         SearchMatcher searchMatcher = new SearchMatcher(MatchStrategy.valueOf(strategy),
                 classPattern);
         //2、查询匹配的类
         Collection<Class<?>> classes = ReflectClassManager.getInstance().searchClass(searchMatcher);
         //3、打印类信息
-        callback.execute(getClassInfos(classes));
+        session.sendCompleteMessage(MessageUtil.buildResponse(getClassInfos(classes)));
     }
 
 

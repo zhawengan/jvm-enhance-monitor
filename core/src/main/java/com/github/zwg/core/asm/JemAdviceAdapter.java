@@ -16,8 +16,8 @@ import org.slf4j.LoggerFactory;
  */
 public class JemAdviceAdapter extends AdviceAdapter {
 
-    private final Logger logger = LoggerFactory.getLogger(JemAdviceAdapter.class);
     private static final Type ASM_TYPE_INT = Type.getType(int.class);
+    private final Logger logger = LoggerFactory.getLogger(JemAdviceAdapter.class);
     private final Label beginLabel = new Label();
     private final Label endLabel = new Label();
     private final Type ASM_TYPE_MONITOR = Type.getType("Lcom/github/zwg/agent/MonitorProxy;");
@@ -36,10 +36,8 @@ public class JemAdviceAdapter extends AdviceAdapter {
     private final String className;
     private final String methodName;
     private final String methodDesc;
-
-    private Integer currentLineNumber;
-
     private final CodeLock codeLock = new AsmCodeLock(this);
+    private Integer currentLineNumber;
 
     protected JemAdviceAdapter(String sessionId, boolean isTracing, String className,
             MethodVisitor methodVisitor,

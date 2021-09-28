@@ -19,8 +19,9 @@ public class ExportClassUtil {
     private static final Logger logger = LoggerFactory.getLogger(ExportClassUtil.class);
 
     public static byte[] loadBytes(Class<?> cls) throws IOException {
-        if (cls == null)
+        if (cls == null) {
             return null;
+        }
 
         String name = cls.getCanonicalName().replaceAll("\\.", "/") + ".class";
 

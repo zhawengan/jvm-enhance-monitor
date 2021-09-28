@@ -57,7 +57,7 @@ public class EnhanceTransformer implements ClassFileTransformer {
         byte[] classBytes = cw.toByteArray();
         logger.info("class:{} enhance success.", className);
 //        if (classBytes != null) {
-            ExportClassUtil.dumpClassIfNecessary(className, classBytes);
+        ExportClassUtil.dumpClassIfNecessary(className, classBytes);
 //        } else {
 //            logger.info("ClassWrite create a empty file. className:{}",className);
 //        }

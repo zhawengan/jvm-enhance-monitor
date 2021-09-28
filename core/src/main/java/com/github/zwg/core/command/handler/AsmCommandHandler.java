@@ -6,11 +6,11 @@ import com.github.zwg.core.annotation.Arg;
 import com.github.zwg.core.annotation.Cmd;
 import com.github.zwg.core.asm.AsmTraceClassVisitor;
 import com.github.zwg.core.command.CommandHandler;
-import com.github.zwg.core.command.MonitorCallback;
 import com.github.zwg.core.command.ParamConstant;
 import com.github.zwg.core.manager.MatchStrategy;
 import com.github.zwg.core.manager.ReflectClassManager;
 import com.github.zwg.core.manager.SearchMatcher;
+import com.github.zwg.core.netty.MessageUtil;
 import com.github.zwg.core.session.Session;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -52,8 +52,7 @@ public class AsmCommandHandler implements CommandHandler {
 
 
     @Override
-    public void execute(Session session, Instrumentation inst,
-            MonitorCallback callback) {
+    public void execute(Session session, Instrumentation inst) {
         SearchMatcher classMatcher = new SearchMatcher(MatchStrategy.valueOf(strategy),
                 classPattern);
         SearchMatcher methodMatcher = new SearchMatcher(
@@ -94,7 +93,7 @@ public class AsmCommandHandler implements CommandHandler {
             result.put(classInfo.clazz.getName(), sw.toString());
         }
 
-        callback.execute(result);
+        session.sendCompleteMessage(MessageUtil.buildResponse(result));
 
     }
 

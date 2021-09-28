@@ -1,9 +1,5 @@
 package com.github.zwg.core.advisor;
 
-import com.github.zwg.core.netty.MessageUtil;
-import com.github.zwg.core.session.DefaultSessionManager;
-import com.github.zwg.core.session.Session;
-import io.netty.channel.Channel;
 import java.util.Map;
 import java.util.Stack;
 import java.util.concurrent.ConcurrentHashMap;
@@ -23,7 +19,7 @@ public class AdviceListenerManager {
     private static final Map<Thread, Stack<Object[]>> threadMethodStash = new ConcurrentHashMap<>();
     private static final ThreadLocal<Boolean> isSelfCall = ThreadLocal.withInitial(() -> false);
 
-    private AdviceListenerManager(){
+    private AdviceListenerManager() {
 
     }
 
@@ -31,15 +27,10 @@ public class AdviceListenerManager {
         advices.put(sessionId, adviceListener);
     }
 
-    public static void unReg(String sessionId){
+    public static void unReg(String sessionId) {
         AdviceListener listener = advices.remove(sessionId);
-        if(listener!=null){
+        if (listener != null) {
             listener.destroy();
-        }
-        Session session = DefaultSessionManager.getInstance().get(sessionId);
-        if (session != null) {
-            Channel channel = session.getChannel();
-            channel.writeAndFlush(MessageUtil.buildPrompt(), channel.voidPromise());
         }
     }
 

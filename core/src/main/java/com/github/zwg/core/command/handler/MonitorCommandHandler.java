@@ -7,12 +7,12 @@ import com.github.zwg.core.annotation.Cmd;
 import com.github.zwg.core.asm.EnhancePoint;
 import com.github.zwg.core.asm.Enhancer;
 import com.github.zwg.core.command.CommandHandler;
-import com.github.zwg.core.command.MonitorCallback;
 import com.github.zwg.core.command.ParamConstant;
 import com.github.zwg.core.manager.JemMethod;
 import com.github.zwg.core.manager.MatchStrategy;
 import com.github.zwg.core.manager.MethodMatcher;
 import com.github.zwg.core.manager.SearchMatcher;
+import com.github.zwg.core.netty.MessageUtil;
 import com.github.zwg.core.session.Session;
 import com.github.zwg.core.statistic.InvokeCost;
 import java.lang.instrument.Instrumentation;
@@ -55,10 +55,9 @@ public class MonitorCommandHandler implements CommandHandler {
     private Integer period;
 
     @Override
-    public void execute(Session session, Instrumentation inst,
-            MonitorCallback callback) {
+    public void execute(Session session, Instrumentation inst) {
         Enhancer.enhance(inst, session.getSessionId(), false, getPoint());
-        AdviceListener adviceListener = getAdviceListener(session, callback);
+        AdviceListener adviceListener = getAdviceListener(session);
         adviceListener.start();
         AdviceListenerManager.reg(session.getSessionId(), adviceListener);
     }
@@ -74,7 +73,7 @@ public class MonitorCommandHandler implements CommandHandler {
     /**
      * 实现具体的监控数据处理流程
      */
-    private AdviceListener getAdviceListener(Session session, MonitorCallback callback) {
+    private AdviceListener getAdviceListener(Session session) {
         return new AdviceListener() {
 
             private Timer timer;
@@ -114,7 +113,8 @@ public class MonitorCommandHandler implements CommandHandler {
                                 result.put("MIN-RT(ms)", data.minCost);
                                 result.put("MAX-RT(ms)", data.maxCost);
                                 result.put("DELAY-QUEUE", stashData.size());
-                                callback.execute(result);
+                                //callback.execute(result);
+                                session.sendMessage(MessageUtil.buildResponse(result));
                             }
                         }
                     }

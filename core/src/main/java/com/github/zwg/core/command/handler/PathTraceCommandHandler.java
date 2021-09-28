@@ -7,7 +7,6 @@ import com.github.zwg.core.annotation.Cmd;
 import com.github.zwg.core.asm.EnhancePoint;
 import com.github.zwg.core.asm.Enhancer;
 import com.github.zwg.core.command.CommandHandler;
-import com.github.zwg.core.command.MonitorCallback;
 import com.github.zwg.core.command.ParamConstant;
 import com.github.zwg.core.manager.JemMethod;
 import com.github.zwg.core.manager.MatchStrategy;
@@ -39,8 +38,7 @@ public class PathTraceCommandHandler implements CommandHandler {
     private boolean isTracing = true;
 
     @Override
-    public void execute(Session session, Instrumentation inst,
-            MonitorCallback callback) {
+    public void execute(Session session, Instrumentation inst) {
         Enhancer.enhance(inst, session.getSessionId(), isTracing, getPoint());
         AdviceListener adviceListener = getAdviceListener();
         AdviceListenerManager.reg(session.getSessionId(), adviceListener);

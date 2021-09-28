@@ -14,23 +14,33 @@ import java.util.Map;
  */
 public class EnhanceClassManager {
 
+    private static EnhanceClassManager manager;
     /**
      * 类的原始字节码
      */
-    private  final Map<Class<?>, byte[]> classCache = new HashMap<>();
-
-    private static EnhanceClassManager manager;
+    private final Map<Class<?>, byte[]> classCache = new HashMap<>();
 
     private EnhanceClassManager() {
 
     }
 
-    public byte[] get(Class<?> clazz){
+    public static EnhanceClassManager getInstance() {
+        if (manager == null) {
+            synchronized (EnhanceClassManager.manager) {
+                if (manager == null) {
+                    manager = new EnhanceClassManager();
+                }
+            }
+        }
+        return manager;
+    }
+
+    public byte[] get(Class<?> clazz) {
         return classCache.get(clazz);
     }
 
-    public void put(Class<?> clazz,byte[] byteCodes){
-        classCache.put(clazz,byteCodes);
+    public void put(Class<?> clazz, byte[] byteCodes) {
+        classCache.put(clazz, byteCodes);
     }
 
     public synchronized void reset(Instrumentation inst) {
@@ -50,18 +60,6 @@ public class EnhanceClassManager {
             inst.removeTransformer(transformer);
             classCache.clear();
         }
-    }
-
-
-    public static EnhanceClassManager getInstance() {
-        if (manager == null) {
-            synchronized (EnhanceClassManager.manager) {
-                if (manager == null) {
-                    manager = new EnhanceClassManager();
-                }
-            }
-        }
-        return manager;
     }
 
 }

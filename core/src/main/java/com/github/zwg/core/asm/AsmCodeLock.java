@@ -26,8 +26,7 @@ public class AsmCodeLock implements CodeLock, Opcodes {
     }
 
     /**
-     * 通过opcode判断是解锁还是上锁的基本原则是
-     * 1、连续读到两个opcode,且这两个opcode的值及顺序完全和beginCodeArray或者endCodeArray一致
+     * 通过opcode判断是解锁还是上锁的基本原则是 1、连续读到两个opcode,且这两个opcode的值及顺序完全和beginCodeArray或者endCodeArray一致
      * 2、找到连续的匹配点后，锁状态直接变更
      */
     @Override

@@ -3,8 +3,8 @@ package com.github.zwg.core.command.handler;
 import com.github.zwg.core.annotation.Cmd;
 import com.github.zwg.core.asm.EnhanceClassManager;
 import com.github.zwg.core.command.CommandHandler;
-import com.github.zwg.core.command.MonitorCallback;
 import com.github.zwg.core.command.ParamConstant;
+import com.github.zwg.core.netty.MessageUtil;
 import com.github.zwg.core.session.Session;
 import java.lang.instrument.Instrumentation;
 import java.util.HashMap;
@@ -20,11 +20,10 @@ public class ResetCommandHandler implements CommandHandler {
 
 
     @Override
-    public void execute(Session session, Instrumentation inst,
-            MonitorCallback callback) {
+    public void execute(Session session, Instrumentation inst) {
         EnhanceClassManager.getInstance().reset(inst);
         Map<String, Object> result = new HashMap<>();
         result.put("message", "reset enhance class success.");
-        callback.execute(result);
+        session.sendCompleteMessage(MessageUtil.buildResponse(result));
     }
 }

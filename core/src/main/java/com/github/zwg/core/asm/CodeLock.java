@@ -22,7 +22,7 @@ public interface CodeLock {
      */
     void lockBlockCode(BlockCode blockCode);
 
-    interface BlockCode{
+    interface BlockCode {
 
         /**
          * 代码

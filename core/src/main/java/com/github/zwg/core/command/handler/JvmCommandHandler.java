@@ -2,8 +2,8 @@ package com.github.zwg.core.command.handler;
 
 import com.github.zwg.core.annotation.Cmd;
 import com.github.zwg.core.command.CommandHandler;
-import com.github.zwg.core.command.MonitorCallback;
 import com.github.zwg.core.command.ParamConstant;
+import com.github.zwg.core.netty.MessageUtil;
 import com.github.zwg.core.session.Session;
 import java.lang.instrument.Instrumentation;
 import java.lang.management.ClassLoadingMXBean;
@@ -36,8 +36,7 @@ public class JvmCommandHandler implements CommandHandler {
 
 
     @Override
-    public void execute(Session session, Instrumentation inst,
-            MonitorCallback callback) {
+    public void execute(Session session, Instrumentation inst) {
         Map<String, Object> info = new HashMap<>();
         info.put("RUNTIME", getRuntime());
         info.put("CLASS-LOADING", getClassLoading());
@@ -47,7 +46,7 @@ public class JvmCommandHandler implements CommandHandler {
         info.put("MEMORY", getMemory());
         info.put("OPERATING-SYSTEM", getOperatingSystem());
         info.put("THREAD", getThreads());
-        callback.execute(info);
+        session.sendCompleteMessage(MessageUtil.buildResponse(info));
     }
 
     private Map<String, Object> getRuntime() {
@@ -62,10 +61,6 @@ public class JvmCommandHandler implements CommandHandler {
         data.put("VM-VENDOR", runtimeMXBean.getVmVendor());
         data.put("VM-VERSION", runtimeMXBean.getVmVersion());
         data.put("INPUT-ARGUMENTS", runtimeMXBean.getInputArguments());
-//        data.put("CLASS-PATH", runtimeMXBean.getClassPath());
-//        data.put("BOOT-CLASS-PATH", runtimeMXBean.isBootClassPathSupported() ?
-//                        runtimeMXBean.getBootClassPath() :
-//                        "This JVM does not support boot class path.");
         data.put("LIBRARY-PATH", runtimeMXBean.getLibraryPath());
         return data;
     }

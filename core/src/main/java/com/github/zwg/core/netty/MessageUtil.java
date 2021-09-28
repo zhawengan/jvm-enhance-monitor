@@ -42,8 +42,8 @@ public class MessageUtil {
         return wrap(sessionId, MessageTypeEnum.REQUEST, null, data);
     }
 
-    public static Message buildResponse(String sessionId, Object data) {
-        return wrap(sessionId, MessageTypeEnum.RESPONSE, null, data);
+    public static Message buildResponse(Object data) {
+        return wrap(null, MessageTypeEnum.RESPONSE, null, data);
     }
 
     public static Message buildAllResponse(String sessionId, Object data) {

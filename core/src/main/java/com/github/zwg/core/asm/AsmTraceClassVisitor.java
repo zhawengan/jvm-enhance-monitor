@@ -21,8 +21,8 @@ import org.objectweb.asm.util.TraceMethodVisitor;
  */
 public class AsmTraceClassVisitor extends ClassVisitor {
 
-    private final PrintWriter pw;
     public final Printer p;
+    private final PrintWriter pw;
 
     public AsmTraceClassVisitor(PrintWriter pw) {
         super(Opcodes.ASM5, null);

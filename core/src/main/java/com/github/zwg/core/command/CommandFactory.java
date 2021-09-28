@@ -77,6 +77,7 @@ public class CommandFactory {
                 }
                 setValue(field, argVal, instance);
             }
+            logger.info("find CommandHandler:{} for Command:{}",clazz.getName(),command);
             return instance;
         } catch (CommandParamException ex) {
             throw ex;

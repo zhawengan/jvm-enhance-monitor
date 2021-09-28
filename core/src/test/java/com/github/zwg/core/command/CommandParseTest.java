@@ -20,9 +20,9 @@ public class CommandParseTest {
         Command command = CommandParse.parse(commandLine);
         assertThat(command).isNull();
 
-        commandLine = "trace  -c  *Test  -m  **Name -n   3";
+        commandLine = "trace  -c  *Test  -m  **Name -n   3 -de {params, returnObj,  #cost}";
         command = CommandParse.parse(commandLine);
         assertThat(command.getName()).isEqualTo("trace");
-        assertThat(command.getOptions().size()).isEqualTo(3);
+        assertThat(command.getOptions().size()).isEqualTo(4);
     }
 }

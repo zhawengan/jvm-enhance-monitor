@@ -10,7 +10,6 @@ import com.github.zwg.core.asm.EnhancePoint;
 import com.github.zwg.core.asm.Enhancer;
 import com.github.zwg.core.command.AccessConstant;
 import com.github.zwg.core.command.CommandHandler;
-import com.github.zwg.core.command.MonitorCallback;
 import com.github.zwg.core.command.ParamConstant;
 import com.github.zwg.core.manager.JemMethod;
 import com.github.zwg.core.manager.MatchStrategy;
@@ -53,8 +52,7 @@ public class StackCommandHandler implements CommandHandler {
 
 
     @Override
-    public void execute(Session session, Instrumentation inst,
-            MonitorCallback callback) {
+    public void execute(Session session, Instrumentation inst) {
         Enhancer.enhance(inst, session.getSessionId(), false, getPoint());
         AdviceListener adviceListener = getAdviceListener(session);
         AdviceListenerManager.reg(session.getSessionId(), adviceListener);

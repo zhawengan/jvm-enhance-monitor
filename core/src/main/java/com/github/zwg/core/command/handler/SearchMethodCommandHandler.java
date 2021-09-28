@@ -6,13 +6,13 @@ import static org.apache.commons.lang3.StringUtils.EMPTY;
 import com.github.zwg.core.annotation.Arg;
 import com.github.zwg.core.annotation.Cmd;
 import com.github.zwg.core.command.CommandHandler;
-import com.github.zwg.core.command.MonitorCallback;
 import com.github.zwg.core.command.ParamConstant;
 import com.github.zwg.core.manager.JemMethod;
 import com.github.zwg.core.manager.MatchStrategy;
 import com.github.zwg.core.manager.MethodMatcher;
 import com.github.zwg.core.manager.ReflectClassManager;
 import com.github.zwg.core.manager.SearchMatcher;
+import com.github.zwg.core.netty.MessageUtil;
 import com.github.zwg.core.session.Session;
 import java.lang.annotation.Annotation;
 import java.lang.instrument.Instrumentation;
@@ -20,6 +20,8 @@ import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author zwg
@@ -28,6 +30,8 @@ import java.util.Map;
  */
 @Cmd(name = ParamConstant.COMMAND_SEARCH_METHOD)
 public class SearchMethodCommandHandler implements CommandHandler {
+
+    private final Logger logger = LoggerFactory.getLogger(SearchMethodCommandHandler.class);
 
     @Arg(name = ParamConstant.CLASS_KEY, description = "find class expression")
     private String classPattern;
@@ -43,8 +47,7 @@ public class SearchMethodCommandHandler implements CommandHandler {
 
 
     @Override
-    public void execute(Session session, Instrumentation inst,
-            MonitorCallback callback) {
+    public void execute(Session session, Instrumentation inst) {
         SearchMatcher classMatcher = new SearchMatcher(MatchStrategy.valueOf(strategy),
                 classPattern);
         JemMethod jemMethod = new JemMethod(methodPattern, methodDesc);
@@ -53,7 +56,10 @@ public class SearchMethodCommandHandler implements CommandHandler {
         Collection<Method> methods = ReflectClassManager.getInstance()
                 .searchClassMethod(classMatcher, methodMatcher);
         //3、打印类信息
-        callback.execute(getMethodInfos(methods));
+        Map<String, Object> methodInfos = getMethodInfos(methods);
+        logger.info("get method info by classPattern:{},methodPattern:{},:{}", classPattern,
+                methodPattern, methodInfos);
+        session.sendCompleteMessage(MessageUtil.buildResponse(methodInfos));
     }
 
     public Map<String, Object> getMethodInfos(Collection<Method> methods) {

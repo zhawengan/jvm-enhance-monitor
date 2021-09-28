@@ -12,9 +12,8 @@ import ognl.OgnlContext;
  */
 public class OgnlExpress implements Express {
 
-    private Object bindObject;
-
     private final OgnlContext context = new OgnlContext();
+    private Object bindObject;
 
     @Override
     public Object get(String express) throws ExpressException {

@@ -15,7 +15,7 @@ public interface Express {
 
     Express bind(Object object);
 
-    Express bind(String name,Object value);
+    Express bind(String name, Object value);
 
     Express reset();
 }
